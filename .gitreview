@@ -1,0 +1,5 @@
+[gerrit]
+host=192.168.250.4
+port=29418
+project=arxanchain/wallet-sdk-go
+defaultbranch=master
