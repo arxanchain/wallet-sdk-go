@@ -24,7 +24,10 @@ go.fqp.govendor  := github.com/kardianos/govendor
 go.fqp.golint    := github.com/golang/lint/golint
 go.fqp.goimports := golang.org/x/tools/cmd/goimports
 
-all: $(GOTOOLS_BIN)
+# project dependencies
+go.dep.gockv1    := gopkg.in/h2non/gock.v1
+
+all: $(GOTOOLS_BIN) dep
 
 # Default rule for gotools uses the name->path map for a generic 'go get' style build
 gotool.%:
@@ -35,6 +38,10 @@ gotool.%:
 $(GOPATH)/bin/%:
 	$(eval TOOL = ${subst $(GOPATH)/bin/,,${@}})
 	@$(MAKE) gotool.$(TOOL)
+
+dep:
+	@echo "Downloading dependencies"
+	go get ${go.dep.gockv1}
 
 .PHONY: clean
 clean:
