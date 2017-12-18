@@ -23,6 +23,7 @@ import (
 	"reflect"
 
 	"github.com/arxanchain/go-common/errors"
+	"github.com/arxanchain/go-common/rest"
 	restapi "github.com/arxanchain/go-common/rest/api"
 	rtstructs "github.com/arxanchain/go-common/rest/structs"
 	"github.com/arxanchain/go-common/structs"
@@ -63,7 +64,7 @@ func (w *WalletClient) Register(header http.Header, body *structs.RegisterWallet
 	}
 
 	if respBody.ErrCode != errors.SuccCode {
-		err = fmt.Errorf("[%v] %v", respBody.ErrCode, respBody.ErrMessage)
+		err = rest.CodedError(respBody.ErrCode, respBody.ErrMessage)
 		return
 	}
 
@@ -99,7 +100,7 @@ func (w *WalletClient) RegisterSubWallet(header http.Header, body *structs.Regis
 	}
 
 	if respBody.ErrCode != errors.SuccCode {
-		err = fmt.Errorf("[%v] %v", respBody.ErrCode, respBody.ErrMessage)
+		err = rest.CodedError(respBody.ErrCode, respBody.ErrMessage)
 		return
 	}
 
@@ -144,7 +145,7 @@ func (w *WalletClient) TransferCCoin(header http.Header, body *structs.TransferB
 	}
 
 	if respBody.ErrCode != errors.SuccCode {
-		err = fmt.Errorf("[%v] %v", respBody.ErrCode, respBody.ErrMessage)
+		err = rest.CodedError(respBody.ErrCode, respBody.ErrMessage)
 		return
 	}
 
@@ -189,7 +190,7 @@ func (w *WalletClient) TransferAsset(header http.Header, body *structs.TransferA
 	}
 
 	if respBody.ErrCode != errors.SuccCode {
-		err = fmt.Errorf("[%v] %v", respBody.ErrCode, respBody.ErrMessage)
+		err = rest.CodedError(respBody.ErrCode, respBody.ErrMessage)
 		return
 	}
 
@@ -223,7 +224,7 @@ func (w *WalletClient) GetWalletBalance(header http.Header, endpoint string) (re
 	}
 
 	if respBody.ErrCode != errors.SuccCode {
-		err = fmt.Errorf("[%v] %v", respBody.ErrCode, respBody.ErrMessage)
+		err = rest.CodedError(respBody.ErrCode, respBody.ErrMessage)
 		return
 	}
 
@@ -257,7 +258,7 @@ func (w *WalletClient) GetWalletInfo(header http.Header, endpoint string) (resul
 	}
 
 	if respBody.ErrCode != errors.SuccCode {
-		err = fmt.Errorf("[%v] %v", respBody.ErrCode, respBody.ErrMessage)
+		err = rest.CodedError(respBody.ErrCode, respBody.ErrMessage)
 		return
 	}
 
