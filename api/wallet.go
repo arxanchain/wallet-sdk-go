@@ -22,11 +22,11 @@ import (
 	"net/http"
 	"reflect"
 
-	"github.com/arxanchain/go-common/errors"
-	"github.com/arxanchain/go-common/rest"
-	restapi "github.com/arxanchain/go-common/rest/api"
-	rtstructs "github.com/arxanchain/go-common/rest/structs"
-	"github.com/arxanchain/go-common/structs"
+	"github.com/arxanchain/sdk-go-common/errors"
+	"github.com/arxanchain/sdk-go-common/rest"
+	restapi "github.com/arxanchain/sdk-go-common/rest/api"
+	rtstructs "github.com/arxanchain/sdk-go-common/rest/structs"
+	"github.com/arxanchain/sdk-go-common/structs"
 )
 
 // WalletClient is a http agent to wallet service
