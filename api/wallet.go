@@ -239,7 +239,7 @@ func (w *WalletClient) GetWalletBalance(header http.Header, endpoint string) (re
 	return
 }
 
-// GetWalletInfo is used to get wallet base infomation
+// GetWalletInfo is used to get wallet base information
 func (w *WalletClient) GetWalletInfo(header http.Header, endpoint string) (result *structs.WalletInfo, err error) {
 	r := w.c.NewRequest("GET", "/v1/wallet/info")
 	r.SetHeaders(header)

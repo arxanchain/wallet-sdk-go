@@ -418,7 +418,7 @@ func TestTransferCCoinSucc(t *testing.T) {
 		To:           "did:ara:002",
 		AssetId:      "asset-id-001",
 		Coins: []*structs.CoinAmount{
-			&structs.CoinAmount{
+			{
 				CoinId: "colored-coin-id-001",
 				Amount: 500,
 			},
@@ -486,7 +486,7 @@ func TestTransferCCoinFail(t *testing.T) {
 		To:           "did:ara:002",
 		AssetId:      "asset-id-001",
 		Coins: []*structs.CoinAmount{
-			&structs.CoinAmount{
+			{
 				CoinId: "colored-coin-id-001",
 				Amount: 500,
 			},
@@ -544,7 +544,7 @@ func TestTransferCCoinFailErrCode(t *testing.T) {
 		To:           "did:ara:002",
 		AssetId:      "asset-id-001",
 		Coins: []*structs.CoinAmount{
-			&structs.CoinAmount{
+			{
 				CoinId: "colored-coin-id-001",
 				Amount: 500,
 			},
@@ -781,7 +781,7 @@ func TestGetWalletBalanceSucc(t *testing.T) {
 	//build response body
 	payload := &structs.WalletBalance{
 		ColoredCoins: map[string]*structs.ColoredCoin{
-			coinId: &structs.ColoredCoin{
+			coinId: {
 				Amount: coinAmount,
 				CoinColor: &structs.CoinColor{
 					Id:        coinId,
@@ -792,7 +792,7 @@ func TestGetWalletBalanceSucc(t *testing.T) {
 			},
 		},
 		DigitalAssets: map[string]*structs.DigitalAsset{
-			assetId: &structs.DigitalAsset{
+			assetId: {
 				Id:   assetId,
 				Name: assetName,
 			},

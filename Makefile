@@ -1,8 +1,16 @@
+#Copyright ArxanFintech Technology Ltd. 2017 All Rights Reserved.
 #
-# Copyright ArxanFintech Technology Ltd. All Rights Reserved.
+#Licensed under the Apache License, Version 2.0 (the "License");
+#you may not use this file except in compliance with the License.
+#You may obtain a copy of the License at
 #
-# SPDX-License-Identifier: Apache-2.0
+#		 http://www.apache.org/licenses/LICENSE-2.0
 #
+#Unless required by applicable law or agreed to in writing, software
+#distributed under the License is distributed on an "AS IS" BASIS,
+#WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#See the License for the specific language governing permissions and
+#limitations under the License.
 #
 # -------------------------------------------------------------
 # This makefile defines the following targets
@@ -13,24 +21,6 @@
 #   - gotools - installs go tools like golint
 #   - linter - runs all code checks
 #   - clean - cleans the build area
-
-PROJECT_NAME=arxanchain/wallet-sdk-go
-PKGNAME = github.com/$(PROJECT_NAME)
-
-CGO_FLAGS = CGO_CFLAGS=" " CGO_LDFLAGS="-lstdc++ -lm -lz -lbz2 -lsnappy"
-EXT_LDFLAGS= --ldflags '-extldflags "-lstdc++ -lm -static"'
-
-ifneq ($(IS_RELEASE),true)
-EXTRA_VERSION ?= snapshot-$(shell git rev-parse --short HEAD)
-PROJECT_VERSION=$(BASE_VERSION)-$(EXTRA_VERSION)
-else
-PROJECT_VERSION=$(BASE_VERSION)
-endif
-
-# No sense rebuilding when non production code is changed
-PROJECT_FILES = $(shell git ls-files | \
-        grep -v _test.go$ | grep -v .md$ | grep -v ^.git | \
-        grep -v ^LICENSE )
 
 EXECUTABLES = go git
 # target apidocs need not check $EXECUTABLES

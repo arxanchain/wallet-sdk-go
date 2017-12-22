@@ -1,0 +1,22 @@
+# Copyright ArxanFintech Technology Ltd. All Rights Reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+
+language: go
+go:
+ - 1.8
+sudo: required
+env:
+    - TEST_TARGET=checks
+
+before_install:
+    - |
+      export GIT_USER="$TRAVIS_REPO_SLUG"
+      USER_NAME="$(echo $GIT_USER | cut -d '/' -f 1)" && REPO_NAME="$(echo $GIT_USER | cut -d '/' -f 2)"
+
+script:
+
+    - echo "Executing Tests"
+    - cd $HOME/gopath/src/github.com/$USER_NAME/$REPO_NAME
+    - make $TEST_TARGET
