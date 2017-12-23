@@ -1,10 +1,14 @@
 #!/bin/bash
+#
+# Copyright Greg Haskins All Rights Reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+#
 
 set -e
 
-declare -a arr=("./api")
-
-for i in "${arr[@]}"
+echo "Running goimports"
+for i in `ls -d */|grep -v gotools |grep -v scripts`
 do
 	OUTPUT="$(goimports -v -l $i)"
 	if [[ $OUTPUT ]]; then
