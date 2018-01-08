@@ -206,10 +206,10 @@ func (w *WalletClient) TransferAsset(header http.Header, body *structs.TransferA
 }
 
 // GetWalletBalance is used to get wallet balances
-func (w *WalletClient) GetWalletBalance(header http.Header, endpoint string) (result *structs.WalletBalance, err error) {
+func (w *WalletClient) GetWalletBalance(header http.Header, id structs.Identifier) (result *structs.WalletBalance, err error) {
 	r := w.c.NewRequest("GET", "/v1/wallet/balance")
 	r.SetHeaders(header)
-	r.SetParam("id", endpoint)
+	r.SetParam("id", string(id))
 
 	_, resp, err := restapi.RequireOK(w.c.DoRequest(r))
 	if err != nil {
@@ -240,10 +240,10 @@ func (w *WalletClient) GetWalletBalance(header http.Header, endpoint string) (re
 }
 
 // GetWalletInfo is used to get wallet base information
-func (w *WalletClient) GetWalletInfo(header http.Header, endpoint string) (result *structs.WalletInfo, err error) {
+func (w *WalletClient) GetWalletInfo(header http.Header, id structs.Identifier) (result *structs.WalletInfo, err error) {
 	r := w.c.NewRequest("GET", "/v1/wallet/info")
 	r.SetHeaders(header)
-	r.SetParam("id", endpoint)
+	r.SetParam("id", string(id))
 
 	_, resp, err := restapi.RequireOK(w.c.DoRequest(r))
 	if err != nil {
