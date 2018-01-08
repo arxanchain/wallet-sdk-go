@@ -982,7 +982,7 @@ func TestGetWalletInfoSucc(t *testing.T) {
 	header.Set("X-Auth-Token", token)
 
 	//do query wallet balance
-	result, err := walletClient.GetWalletInfo(header, string(id))
+	result, err := walletClient.GetWalletInfo(header, id)
 	if err != nil {
 		t.Fatalf("get wallet info fail: %v", err)
 	}
