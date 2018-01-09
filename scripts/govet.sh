@@ -14,7 +14,7 @@ cd $GOPATH/src/github.com/arxanchain/wallet-sdk-go/
 
 for i in `ls -d */|grep -v gotools |grep -v scripts`
 do
-    OUTPUT=`go vet ./$i/...`
+    OUTPUT=`go vet ./$i/... && golint ./$i... && misspell ./$i/*`
     if [[ $OUTPUT ]]; then
         echo "The following files contain go vet errors"
         echo $OUTPUT

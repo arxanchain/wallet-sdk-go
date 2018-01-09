@@ -13,13 +13,14 @@
 #limitations under the License.
 #
 
-GOTOOLS = golint govendor goimports
+GOTOOLS = golint govendor goimports misspell
 GOTOOLS_BIN = $(patsubst %,$(GOPATH)/bin/%, $(GOTOOLS))
 
 # go tool->path mapping
 go.fqp.govendor  := github.com/kardianos/govendor
 go.fqp.golint    := github.com/golang/lint/golint
 go.fqp.goimports := golang.org/x/tools/cmd/goimports
+go.fqp.misspell   := github.com/client9/misspell/cmd/misspell
 
 # project dependencies
 go.dep.sdk-go-common := github.com/arxanchain/sdk-go-common/...

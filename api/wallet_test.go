@@ -408,7 +408,7 @@ func TestTransferCCoinSucc(t *testing.T) {
 
 	const (
 		token   = "user-token-001"
-		transId = "trans-id-001"
+		transID = "trans-id-001"
 	)
 
 	//request body & response body
@@ -430,7 +430,7 @@ func TestTransferCCoinSucc(t *testing.T) {
 		SignatureValue: []byte("this is signature value"),
 	}
 	payload := &structs.WalletResponse{
-		TransactionIds: []string{transId},
+		TransactionIds: []string{transID},
 	}
 	byPayload, err := json.Marshal(payload)
 	if err != nil {
@@ -463,8 +463,8 @@ func TestTransferCCoinSucc(t *testing.T) {
 	if len(resp.TransactionIds) == 0 {
 		t.Fatalf("response transaction list should not be empty")
 	}
-	if resp.TransactionIds[0] != transId {
-		t.Fatalf("response transaction id should be %v", transId)
+	if resp.TransactionIds[0] != transID {
+		t.Fatalf("response transaction id should be %v", transID)
 	}
 }
 
@@ -599,7 +599,7 @@ func TestTransferAssetSucc(t *testing.T) {
 
 	const (
 		token   = "user-token-001"
-		transId = "trans-id-001"
+		transID = "trans-id-001"
 	)
 
 	//request body & response body
@@ -615,7 +615,7 @@ func TestTransferAssetSucc(t *testing.T) {
 		SignatureValue: []byte("this is signature value"),
 	}
 	payload := &structs.WalletResponse{
-		TransactionIds: []string{transId},
+		TransactionIds: []string{transID},
 	}
 	byPayload, err := json.Marshal(payload)
 	if err != nil {
@@ -648,8 +648,8 @@ func TestTransferAssetSucc(t *testing.T) {
 	if len(resp.TransactionIds) == 0 {
 		t.Fatalf("response transaction list should not be empty")
 	}
-	if resp.TransactionIds[0] != transId {
-		t.Fatalf("response transaction id should be %v", transId)
+	if resp.TransactionIds[0] != transID {
+		t.Fatalf("response transaction id should be %v", transID)
 	}
 }
 
@@ -772,19 +772,19 @@ func TestGetWalletBalanceSucc(t *testing.T) {
 	const (
 		id         = "did:ara:001"
 		token      = "user-token-001"
-		coinId     = "colored-coin-001"
+		coinID     = "colored-coin-001"
 		coinAmount = 5000
-		assetId    = "asset-id-002"
+		assetID    = "asset-id-002"
 		assetName  = "stock003"
 	)
 
 	//build response body
 	payload := &structs.WalletBalance{
 		ColoredCoins: map[string]*structs.ColoredCoin{
-			coinId: {
+			coinID: {
 				Amount: coinAmount,
 				CoinColor: &structs.CoinColor{
-					Id:        coinId,
+					Id:        coinID,
 					Ancestor:  "asset-id-111",
 					Issuer:    "did:ara:111",
 					IssueTime: 66666,
@@ -792,8 +792,8 @@ func TestGetWalletBalanceSucc(t *testing.T) {
 			},
 		},
 		DigitalAssets: map[string]*structs.DigitalAsset{
-			assetId: {
-				Id:   assetId,
+			assetID: {
+				Id:   assetID,
 				Name: assetName,
 			},
 		},
@@ -832,19 +832,19 @@ func TestGetWalletBalanceSucc(t *testing.T) {
 	if result.DigitalAssets == nil || len(result.DigitalAssets) == 0 {
 		t.Fatalf("digital assets should not be nil")
 	}
-	coin, ok := result.ColoredCoins[coinId]
+	coin, ok := result.ColoredCoins[coinID]
 	if !ok || coin == nil {
-		t.Fatalf("colored coin(%v) should exist", coinId)
+		t.Fatalf("colored coin(%v) should exist", coinID)
 	}
 	if coin.Amount != coinAmount {
-		t.Fatalf("colored coin(%v) amount should be %v", coinId, coinAmount)
+		t.Fatalf("colored coin(%v) amount should be %v", coinID, coinAmount)
 	}
-	asset, ok := result.DigitalAssets[assetId]
+	asset, ok := result.DigitalAssets[assetID]
 	if !ok || asset == nil {
-		t.Fatalf("asset(%v) should exist", assetId)
+		t.Fatalf("asset(%v) should exist", assetID)
 	}
 	if asset.Name != assetName {
-		t.Fatalf("asset(%v) name should be %v", assetId, assetName)
+		t.Fatalf("asset(%v) name should be %v", assetID, assetName)
 	}
 }
 

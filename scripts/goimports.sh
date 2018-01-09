@@ -10,7 +10,7 @@ set -e
 echo "Running goimports"
 for i in `ls -d */|grep -v gotools |grep -v scripts`
 do
-	OUTPUT="$(goimports -v -l $i)"
+	OUTPUT="$(goimports -l $i)"
 	if [[ $OUTPUT ]]; then
 		echo "Contain goimports errors: "
 		echo $OUTPUT
