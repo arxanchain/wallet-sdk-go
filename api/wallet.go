@@ -115,10 +115,10 @@ func (w *WalletClient) RegisterSubWallet(header http.Header, body *structs.Regis
 	return
 }
 
-// TransferCCoin is used to transfer colored coins from one user to another
-func (w *WalletClient) TransferCCoin(header http.Header, body *structs.TransferBody, sign *structs.SignatureBody) (result *structs.WalletResponse, err error) {
+// TransferToken is used to transfer utility tokens from one user to another
+func (w *WalletClient) TransferToken(header http.Header, body *structs.TransferBody, sign *structs.SignatureBody) (result *structs.WalletResponse, err error) {
 	// build http request
-	r := w.c.NewRequest("POST", "/v1/wallet/coins/transfer")
+	r := w.c.NewRequest("POST", "/v1/wallet/tokens/transfer")
 	r.SetHeaders(header)
 
 	reqPayload, err := json.Marshal(body)
