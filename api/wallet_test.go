@@ -395,7 +395,7 @@ func TestRegisterSubWalletFailErrCode(t *testing.T) {
 	}
 }
 
-func TestTransferTokenSucc(t *testing.T) {
+func TestTransferCTokenSucc(t *testing.T) {
 	//init gock & walletclient
 	initWalletClient(t)
 	defer gock.Off()
@@ -412,7 +412,7 @@ func TestTransferTokenSucc(t *testing.T) {
 		AssetId: "asset-id-001",
 		Coins: []*structs.CoinAmount{
 			{
-				CoinId: "utility-token-id-001",
+				CoinId: "colored-token-id-001",
 				Amount: 500,
 			},
 		},
@@ -446,7 +446,7 @@ func TestTransferTokenSucc(t *testing.T) {
 	header.Set("X-Auth-Token", token)
 
 	//do transfer colored coin
-	resp, err := walletClient.TransferToken(header, reqBody, sign)
+	resp, err := walletClient.TransferCToken(header, reqBody, sign)
 	if err != nil {
 		t.Fatalf("transfer colored coin fail: %v", err)
 	}
@@ -461,7 +461,7 @@ func TestTransferTokenSucc(t *testing.T) {
 	}
 }
 
-func TestTransferTokenFail(t *testing.T) {
+func TestTransferCTokenFail(t *testing.T) {
 	//init gock & walletclient
 	initWalletClient(t)
 	defer gock.Off()
@@ -479,7 +479,7 @@ func TestTransferTokenFail(t *testing.T) {
 		AssetId: "asset-id-001",
 		Coins: []*structs.CoinAmount{
 			{
-				CoinId: "utility-token-id-001",
+				CoinId: "colored-token-id-001",
 				Amount: 500,
 			},
 		},
@@ -506,7 +506,7 @@ func TestTransferTokenFail(t *testing.T) {
 	header.Set("X-Auth-Token", token)
 
 	// do transfer colored coin
-	resp, err := walletClient.TransferToken(header, reqBody, sign)
+	resp, err := walletClient.TransferCToken(header, reqBody, sign)
 	if err == nil {
 		t.Fatalf("err should not be nil when transfer colored coin fail")
 	}
@@ -518,7 +518,7 @@ func TestTransferTokenFail(t *testing.T) {
 	}
 }
 
-func TestTransferTokenFailErrCode(t *testing.T) {
+func TestTransferCTokenFailErrCode(t *testing.T) {
 	//init gock & walletclient
 	initWalletClient(t)
 	defer gock.Off()
@@ -536,7 +536,7 @@ func TestTransferTokenFailErrCode(t *testing.T) {
 		AssetId: "asset-id-001",
 		Coins: []*structs.CoinAmount{
 			{
-				CoinId: "utility-token-id-001",
+				CoinId: "colored-token-id-001",
 				Amount: 500,
 			},
 		},
@@ -563,7 +563,7 @@ func TestTransferTokenFailErrCode(t *testing.T) {
 	header.Set("X-Auth-Token", token)
 
 	// do transfer colored coin
-	resp, err := walletClient.TransferToken(header, reqBody, sign)
+	resp, err := walletClient.TransferCToken(header, reqBody, sign)
 	if err == nil {
 		t.Fatalf("err should not be nil when transfer colored coin fail")
 	}
@@ -760,7 +760,7 @@ func TestGetWalletBalanceSucc(t *testing.T) {
 	const (
 		id         = "did:ara:001"
 		token      = "user-token-001"
-		coinID     = "utility-token-001"
+		coinID     = "colored-token-001"
 		coinAmount = 5000
 		assetID    = "asset-id-002"
 		assetName  = "stock003"
@@ -768,7 +768,7 @@ func TestGetWalletBalanceSucc(t *testing.T) {
 
 	//build response body
 	payload := &structs.WalletBalance{
-		UtilityTokens: map[string]*structs.ColoredCoin{
+		ColoredTokens: map[string]*structs.ColoredCoin{
 			coinID: {
 				Amount: coinAmount,
 				CoinColor: &structs.CoinColor{
@@ -814,13 +814,13 @@ func TestGetWalletBalanceSucc(t *testing.T) {
 	if result == nil {
 		t.Fatalf("response balance object should not be nil")
 	}
-	if result.UtilityTokens == nil || len(result.UtilityTokens) == 0 {
-		t.Fatalf("utility tokens should not be nil")
+	if result.ColoredTokens == nil || len(result.ColoredTokens) == 0 {
+		t.Fatalf("colored tokens should not be nil")
 	}
 	if result.DigitalAssets == nil || len(result.DigitalAssets) == 0 {
 		t.Fatalf("digital assets should not be nil")
 	}
-	coin, ok := result.UtilityTokens[coinID]
+	coin, ok := result.ColoredTokens[coinID]
 	if !ok || coin == nil {
 		t.Fatalf("colored coin(%v) should exist", coinID)
 	}
