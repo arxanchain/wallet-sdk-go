@@ -436,7 +436,7 @@ func TestTransferCTokenSucc(t *testing.T) {
 
 	//mock http request
 	gock.New("http://127.0.0.1:8006").
-		Post("/v1/wallet/tokens/transfer").
+		Post("/v1/transaction/tokens/transfer").
 		MatchHeader("X-Auth-Token", token).
 		Reply(200).
 		JSON(respBody)
@@ -496,7 +496,7 @@ func TestTransferCTokenFail(t *testing.T) {
 
 	//mock http request
 	gock.New("http://127.0.0.1:8006").
-		Post("/v1/wallet/tokens/transfer").
+		Post("/v1/transaction/tokens/transfer").
 		MatchHeader("X-Auth-Token", token).
 		Reply(errCode).
 		JSON(respBody)
@@ -553,7 +553,7 @@ func TestTransferCTokenFailErrCode(t *testing.T) {
 
 	//mock http request
 	gock.New("http://127.0.0.1:8006").
-		Post("/v1/wallet/tokens/transfer").
+		Post("/v1/transaction/tokens/transfer").
 		MatchHeader("X-Auth-Token", token).
 		Reply(200).
 		JSON(respBody)
@@ -618,7 +618,7 @@ func TestTransferAssetSucc(t *testing.T) {
 
 	//mock http request
 	gock.New("http://127.0.0.1:8006").
-		Post("/v1/wallet/assets/transfer").
+		Post("/v1/transaction/assets/transfer").
 		MatchHeader("X-Auth-Token", token).
 		Reply(200).
 		JSON(respBody)
@@ -672,7 +672,7 @@ func TestTransferAssetFail(t *testing.T) {
 
 	//mock http request
 	gock.New("http://127.0.0.1:8006").
-		Post("/v1/wallet/assets/transfer").
+		Post("/v1/transaction/assets/transfer").
 		MatchHeader("X-Auth-Token", token).
 		Reply(errCode).
 		JSON(respBody)
@@ -723,7 +723,7 @@ func TestTransferAssetFailErrCode(t *testing.T) {
 
 	//mock http request
 	gock.New("http://127.0.0.1:8006").
-		Post("/v1/wallet/assets/transfer").
+		Post("/v1/transaction/assets/transfer").
 		MatchHeader("X-Auth-Token", token).
 		Reply(200).
 		JSON(respBody)
