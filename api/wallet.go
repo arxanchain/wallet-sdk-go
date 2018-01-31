@@ -36,6 +36,13 @@ type WalletClient struct {
 
 // NewWalletClient returns a WalletClient instance
 func NewWalletClient(config *restapi.Config) (*WalletClient, error) {
+	if config == nil {
+		return nil, fmt.Errorf("config must be set")
+	}
+	if config.RouteTag == "" {
+		config.RouteTag = "wallet-ng"
+	}
+
 	c, err := restapi.NewClient(config)
 	if err != nil {
 		return nil, err
