@@ -50,7 +50,7 @@ func TestRegisterSucc(t *testing.T) {
 	defer gock.Off()
 
 	const (
-		id         = "did:ara:001"
+		id         = "did:axn:001"
 		endpoint   = "endpoint-001"
 		created    = 88888
 		privateKey = "YWRqZmRzYWZrZHNmc2pkZmprd2VqZmpzZGxmanNqZmtsZHNqZmxkc2Zkc2Zkc2ZlZnNkZmRzZjAyMzB1Z29qZGl2bnJzZHNkc2Zkc2Zld2ZzZHNta2pr"
@@ -227,7 +227,7 @@ func TestRegisterSubWalletSucc(t *testing.T) {
 	defer gock.Off()
 
 	const (
-		id         = "did:ara:001"
+		id         = "did:axn:001"
 		endpoint   = "endpoint-001"
 		created    = 88888
 		privateKey = "YWRqZmRzYWZrZHNmc2pkZmprd2VqZmpzZGxmanNqZmtsZHNqZmxkc2Zkc2Zkc2ZlZnNkZmRzZjAyMzB1Z29qZGl2bnJzZHNkc2Zkc2Zld2ZzZHNta2pr"
@@ -237,7 +237,7 @@ func TestRegisterSubWalletSucc(t *testing.T) {
 
 	//request body & response body
 	reqBody := &structs.RegisterSubWalletBody{
-		Id:   "did:ara:001",
+		Id:   "did:axn:001",
 		Type: "cash",
 	}
 	payload := &structs.WalletResponse{
@@ -310,7 +310,7 @@ func TestRegisterSubWalletFail(t *testing.T) {
 
 	//request body & response body
 	reqBody := &structs.RegisterSubWalletBody{
-		Id:   "did:ara:001",
+		Id:   "did:axn:001",
 		Type: "cash",
 	}
 	respBody := &rtstructs.Response{
@@ -355,7 +355,7 @@ func TestRegisterSubWalletFailErrCode(t *testing.T) {
 
 	//request body & response body
 	reqBody := &structs.RegisterSubWalletBody{
-		Id:   "did:ara:001",
+		Id:   "did:axn:001",
 		Type: "cash",
 	}
 	respBody := &rtstructs.Response{
@@ -395,370 +395,13 @@ func TestRegisterSubWalletFailErrCode(t *testing.T) {
 	}
 }
 
-func TestTransferCTokenSucc(t *testing.T) {
-	//init gock & walletclient
-	initWalletClient(t)
-	defer gock.Off()
-
-	const (
-		token   = "user-token-001"
-		transID = "trans-id-001"
-	)
-
-	//request body & response body
-	reqBody := &structs.TransferBody{
-		From:    "did:ara:001",
-		To:      "did:ara:002",
-		AssetId: "asset-id-001",
-		Coins: []*structs.CoinAmount{
-			{
-				CoinId: "colored-token-id-001",
-				Amount: 500,
-			},
-		},
-	}
-	sign := &structs.SignatureBody{
-		Creator:        "did:ara:arxan-provider",
-		Nonce:          "helloalice",
-		SignatureValue: []byte("this is signature value"),
-	}
-	payload := &structs.WalletResponse{
-		TransactionIds: []string{transID},
-	}
-	byPayload, err := json.Marshal(payload)
-	if err != nil {
-		t.Fatalf("%v", err)
-	}
-	respBody := &rtstructs.Response{
-		ErrCode: 0,
-		Payload: string(byPayload),
-	}
-
-	//mock http request
-	gock.New("http://127.0.0.1:8006").
-		Post("/v1/transaction/tokens/transfer").
-		MatchHeader("X-Auth-Token", token).
-		Reply(200).
-		JSON(respBody)
-
-	//set http header
-	header := http.Header{}
-	header.Set("X-Auth-Token", token)
-
-	//do transfer colored coin
-	resp, err := walletClient.TransferCToken(header, reqBody, sign)
-	if err != nil {
-		t.Fatalf("transfer colored coin fail: %v", err)
-	}
-	if resp == nil {
-		t.Fatalf("response should not be nil")
-	}
-	if len(resp.TransactionIds) == 0 {
-		t.Fatalf("response transaction list should not be empty")
-	}
-	if resp.TransactionIds[0] != transID {
-		t.Fatalf("response transaction id should be %v", transID)
-	}
-}
-
-func TestTransferCTokenFail(t *testing.T) {
-	//init gock & walletclient
-	initWalletClient(t)
-	defer gock.Off()
-
-	const (
-		token   = "user-token-001"
-		errCode = 5015
-		errMsg  = "BalancesNotSufficient"
-	)
-
-	//request body & response body
-	reqBody := &structs.TransferBody{
-		From:    "did:ara:001",
-		To:      "did:ara:002",
-		AssetId: "asset-id-001",
-		Coins: []*structs.CoinAmount{
-			{
-				CoinId: "colored-token-id-001",
-				Amount: 500,
-			},
-		},
-	}
-	sign := &structs.SignatureBody{
-		Creator:        "did:ara:arxan-provider",
-		Nonce:          "helloalice",
-		SignatureValue: []byte("this is signature value"),
-	}
-	respBody := &rtstructs.Response{
-		ErrCode:    errCode,
-		ErrMessage: errMsg,
-	}
-
-	//mock http request
-	gock.New("http://127.0.0.1:8006").
-		Post("/v1/transaction/tokens/transfer").
-		MatchHeader("X-Auth-Token", token).
-		Reply(errCode).
-		JSON(respBody)
-
-	//set http header
-	header := http.Header{}
-	header.Set("X-Auth-Token", token)
-
-	// do transfer colored coin
-	resp, err := walletClient.TransferCToken(header, reqBody, sign)
-	if err == nil {
-		t.Fatalf("err should not be nil when transfer colored coin fail")
-	}
-	if !strings.Contains(err.Error(), errMsg) {
-		t.Fatalf("err message should contains [%v]", errMsg)
-	}
-	if resp != nil {
-		t.Fatalf("response object should be nil when transfer colored coin fail")
-	}
-}
-
-func TestTransferCTokenFailErrCode(t *testing.T) {
-	//init gock & walletclient
-	initWalletClient(t)
-	defer gock.Off()
-
-	const (
-		token   = "user-token-001"
-		errCode = 5015
-		errMsg  = "BalancesNotSufficient"
-	)
-
-	//request body & response body
-	reqBody := &structs.TransferBody{
-		From:    "did:ara:001",
-		To:      "did:ara:002",
-		AssetId: "asset-id-001",
-		Coins: []*structs.CoinAmount{
-			{
-				CoinId: "colored-token-id-001",
-				Amount: 500,
-			},
-		},
-	}
-	sign := &structs.SignatureBody{
-		Creator:        "did:ara:arxan-provider",
-		Nonce:          "helloalice",
-		SignatureValue: []byte("this is signature value"),
-	}
-	respBody := &rtstructs.Response{
-		ErrCode:    errCode,
-		ErrMessage: errMsg,
-	}
-
-	//mock http request
-	gock.New("http://127.0.0.1:8006").
-		Post("/v1/transaction/tokens/transfer").
-		MatchHeader("X-Auth-Token", token).
-		Reply(200).
-		JSON(respBody)
-
-	//set http header
-	header := http.Header{}
-	header.Set("X-Auth-Token", token)
-
-	// do transfer colored coin
-	resp, err := walletClient.TransferCToken(header, reqBody, sign)
-	if err == nil {
-		t.Fatalf("err should not be nil when transfer colored coin fail")
-	}
-	errWitherrCode, ok := err.(rest.HTTPCodedError)
-	if !ok {
-		t.Fatalf("error type should be HTTPCodedError not %v", reflect.TypeOf(err))
-	}
-	if errWitherrCode.Code() != errCode {
-		t.Fatalf("Error code should be %d", errCode)
-	}
-	if errWitherrCode.Error() != errMsg {
-		t.Fatalf("Error message should be %s", errMsg)
-	}
-
-	if resp != nil {
-		t.Fatalf("response object should be nil when transfer colored coin fail")
-	}
-}
-
-func TestTransferAssetSucc(t *testing.T) {
-	//init gock & walletclient
-	initWalletClient(t)
-	defer gock.Off()
-
-	const (
-		token   = "user-token-001"
-		transID = "trans-id-001"
-	)
-
-	//request body & response body
-	reqBody := &structs.TransferAssetBody{
-		From:   "did:ara:001",
-		To:     "did:ara:002",
-		Assets: []string{"asset-id-001"},
-	}
-	sign := &structs.SignatureBody{
-		Creator:        "did:ara:arxan-provider",
-		Nonce:          "helloalice",
-		SignatureValue: []byte("this is signature value"),
-	}
-	payload := &structs.WalletResponse{
-		TransactionIds: []string{transID},
-	}
-	byPayload, err := json.Marshal(payload)
-	if err != nil {
-		t.Fatalf("%v", err)
-	}
-	respBody := &rtstructs.Response{
-		ErrCode: 0,
-		Payload: string(byPayload),
-	}
-
-	//mock http request
-	gock.New("http://127.0.0.1:8006").
-		Post("/v1/transaction/assets/transfer").
-		MatchHeader("X-Auth-Token", token).
-		Reply(200).
-		JSON(respBody)
-
-	// set http header
-	header := http.Header{}
-	header.Set("X-Auth-Token", token)
-
-	// do transfer asset
-	resp, err := walletClient.TransferAsset(header, reqBody, sign)
-	if err != nil {
-		t.Fatalf("transfer asset fail: %v", err)
-	}
-	if resp == nil {
-		t.Fatalf("response should not be nil")
-	}
-	if len(resp.TransactionIds) == 0 {
-		t.Fatalf("response transaction list should not be empty")
-	}
-	if resp.TransactionIds[0] != transID {
-		t.Fatalf("response transaction id should be %v", transID)
-	}
-}
-
-func TestTransferAssetFail(t *testing.T) {
-	//init gock & walletclient
-	initWalletClient(t)
-	defer gock.Off()
-
-	const (
-		token   = "user-token-001"
-		errCode = 5021
-		errMsg  = "AssetNotFound"
-	)
-
-	//request body & response body
-	reqBody := &structs.TransferAssetBody{
-		From:   "did:ara:001",
-		To:     "did:ara:002",
-		Assets: []string{"asset-id-001"},
-	}
-	sign := &structs.SignatureBody{
-		Creator:        "did:ara:arxan-provider",
-		Nonce:          "helloalice",
-		SignatureValue: []byte("this is signature value"),
-	}
-	respBody := &rtstructs.Response{
-		ErrCode:    errCode,
-		ErrMessage: errMsg,
-	}
-
-	//mock http request
-	gock.New("http://127.0.0.1:8006").
-		Post("/v1/transaction/assets/transfer").
-		MatchHeader("X-Auth-Token", token).
-		Reply(errCode).
-		JSON(respBody)
-
-	//set http header
-	header := http.Header{}
-	header.Set("X-Auth-Token", token)
-
-	// do transfer asset
-	resp, err := walletClient.TransferAsset(header, reqBody, sign)
-	if err == nil {
-		t.Fatalf("err should not be nil when transfer colored coin fail")
-	}
-	if !strings.Contains(err.Error(), errMsg) {
-		t.Fatalf("err message should contains [%v]", errMsg)
-	}
-	if resp != nil {
-		t.Fatalf("response object should be nil when transfer colored coin fail")
-	}
-}
-
-func TestTransferAssetFailErrCode(t *testing.T) {
-	//init gock & walletclient
-	initWalletClient(t)
-	defer gock.Off()
-
-	const (
-		token   = "user-token-001"
-		errCode = 5021
-		errMsg  = "AssetNotFound"
-	)
-
-	//request body & response body
-	reqBody := &structs.TransferAssetBody{
-		From:   "did:ara:001",
-		To:     "did:ara:002",
-		Assets: []string{"asset-id-001"},
-	}
-	sign := &structs.SignatureBody{
-		Creator:        "did:ara:arxan-provider",
-		Nonce:          "helloalice",
-		SignatureValue: []byte("this is signature value"),
-	}
-	respBody := &rtstructs.Response{
-		ErrCode:    errCode,
-		ErrMessage: errMsg,
-	}
-
-	//mock http request
-	gock.New("http://127.0.0.1:8006").
-		Post("/v1/transaction/assets/transfer").
-		MatchHeader("X-Auth-Token", token).
-		Reply(200).
-		JSON(respBody)
-
-	//set http header
-	header := http.Header{}
-	header.Set("X-Auth-Token", token)
-
-	// do transfer asset
-	resp, err := walletClient.TransferAsset(header, reqBody, sign)
-	if err == nil {
-		t.Fatalf("err should not be nil when transfer colored coin fail")
-	}
-	errWitherrCode, ok := err.(rest.HTTPCodedError)
-	if !ok {
-		t.Fatalf("error type should be HTTPCodedError not %v", reflect.TypeOf(err))
-	}
-	if errWitherrCode.Code() != errCode {
-		t.Fatalf("Error code should be %d", errCode)
-	}
-	if errWitherrCode.Error() != errMsg {
-		t.Fatalf("Error message should be %s", errMsg)
-	}
-	if resp != nil {
-		t.Fatalf("response object should be nil when transfer colored coin fail")
-	}
-}
-
 func TestGetWalletBalanceSucc(t *testing.T) {
 	//init gock & edkeyclient
 	initWalletClient(t)
 	defer gock.Off()
 
 	const (
-		id         = "did:ara:001"
+		id         = "did:axn:001"
 		token      = "user-token-001"
 		coinID     = "colored-token-001"
 		coinAmount = 5000
@@ -768,21 +411,18 @@ func TestGetWalletBalanceSucc(t *testing.T) {
 
 	//build response body
 	payload := &structs.WalletBalance{
-		ColoredTokens: map[string]*structs.ColoredCoin{
+		ColoredTokens: map[string]*structs.CTokenBalance{
 			coinID: {
+				Id:     coinID,
 				Amount: coinAmount,
-				CoinColor: &structs.CoinColor{
-					Id:        coinID,
-					Ancestor:  "asset-id-111",
-					Issuer:    "did:ara:111",
-					IssueTime: 66666,
-				},
 			},
 		},
-		DigitalAssets: map[string]*structs.DigitalAsset{
+		DigitalAssets: map[string]*structs.AssetBalance{
 			assetID: {
-				Id:   assetID,
-				Name: assetName,
+				Id:     assetID,
+				Amount: 1,
+				Name:   assetName,
+				Status: 1,
 			},
 		},
 	}
@@ -842,7 +482,7 @@ func TestGetWalletBalanceFail(t *testing.T) {
 	defer gock.Off()
 
 	const (
-		id      = "did:ara:001"
+		id      = "did:axn:001"
 		token   = "user-token-001"
 		errCode = 8001
 		errMsg  = "get colored coin error"
@@ -884,7 +524,7 @@ func TestGetWalletBalanceFailErrCode(t *testing.T) {
 	defer gock.Off()
 
 	const (
-		id      = "did:ara:001"
+		id      = "did:axn:001"
 		token   = "user-token-001"
 		errCode = 8001
 		errMsg  = "get colored coin error"
@@ -935,7 +575,7 @@ func TestGetWalletInfoSucc(t *testing.T) {
 
 	const (
 		token      = "user-token-001"
-		id         = structs.Identifier("did:ara:001")
+		id         = structs.Identifier("did:axn:001")
 		endpoint   = structs.DidEndpoint("endpoint-001")
 		walletType = structs.DidType("Organization")
 	)
@@ -997,7 +637,7 @@ func TestGetWalletInfoFail(t *testing.T) {
 	defer gock.Off()
 
 	const (
-		id      = "did:ara:001"
+		id      = "did:axn:001"
 		token   = "user-token-001"
 		errCode = 8000
 		errMsg  = "wallet not found"
@@ -1039,7 +679,7 @@ func TestGetWalletInfoFailErrCode(t *testing.T) {
 	defer gock.Off()
 
 	const (
-		id      = "did:ara:001"
+		id      = "did:axn:001"
 		token   = "user-token-001"
 		errCode = 8000
 		errMsg  = "wallet not found"
