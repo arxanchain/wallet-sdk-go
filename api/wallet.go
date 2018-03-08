@@ -113,7 +113,6 @@ func (w *WalletClient) Register(header http.Header, body *structs.RegisterWallet
 func (w *WalletClient) RegisterSubWallet(header http.Header, body *structs.RegisterSubWalletBody) (result *structs.WalletResponse, err error) {
 	if body == nil {
 		err = fmt.Errorf("request payload invalid")
-		return
 	}
 
 	// Build http request
