@@ -5,3 +5,15 @@
 
 # wallet-go-sdk
 Blockchain Wallet SDK
+
+## Register wallet account
+
+## Create POE digital asset and upload file
+
+## Issue colored token using digital asset
+
+## Transfer colored token
+
+## Query colored token balance
+
+## How to do ed25519 signature?
