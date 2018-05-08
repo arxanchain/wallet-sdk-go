@@ -49,10 +49,10 @@ func TestCreatePOESucc(t *testing.T) {
 		Owner:    "did:axn:001",
 		Metadata: []byte("this is metadata"),
 	}
-	sign := &structs.SignatureBody{
-		Creator:        "did:axn:arxan-provider",
-		Nonce:          "helloalice",
-		SignatureValue: "dGhpcyBpcyBzaWduYXR1cmUgdmFsdWU=",
+	sign := &structs.SignatureParam{
+		Creator:    "did:axn:arxan-provider",
+		Nonce:      "helloalice",
+		PrivateKey: "WBZNmTTf34Kg+pQOTSIRL+JeQYDfj7InWc0A/9kvNvQSI8Ue8iRD8gn9CNmGO2EjJILF/3RELmEcbuS5G0d+Mg==",
 	}
 	payload := &structs.WalletResponse{
 		Id:             poeID,
@@ -118,10 +118,10 @@ func TestCreatePOEFail(t *testing.T) {
 		Owner:    "did:axn:001",
 		Metadata: []byte("this is metadata"),
 	}
-	sign := &structs.SignatureBody{
-		Creator:        "did:axn:arxan-provider",
-		Nonce:          "helloalice",
-		SignatureValue: "dGhpcyBpcyBzaWduYXR1cmUgdmFsdWU=",
+	sign := &structs.SignatureParam{
+		Creator:    "did:axn:arxan-provider",
+		Nonce:      "helloalice",
+		PrivateKey: "WBZNmTTf34Kg+pQOTSIRL+JeQYDfj7InWc0A/9kvNvQSI8Ue8iRD8gn9CNmGO2EjJILF/3RELmEcbuS5G0d+Mg==",
 	}
 	respBody := &rtstructs.Response{
 		ErrCode:    errCode,
@@ -169,10 +169,10 @@ func TestCreatePOEFailErrCode(t *testing.T) {
 		Owner:    "did:axn:001",
 		Metadata: []byte("this is metadata"),
 	}
-	sign := &structs.SignatureBody{
-		Creator:        "did:axn:arxan-provider",
-		Nonce:          "helloalice",
-		SignatureValue: "dGhpcyBpcyBzaWduYXR1cmUgdmFsdWU=",
+	sign := &structs.SignatureParam{
+		Creator:    "did:axn:arxan-provider",
+		Nonce:      "helloalice",
+		PrivateKey: "WBZNmTTf34Kg+pQOTSIRL+JeQYDfj7InWc0A/9kvNvQSI8Ue8iRD8gn9CNmGO2EjJILF/3RELmEcbuS5G0d+Mg==",
 	}
 	respBody := &rtstructs.Response{
 		ErrCode:    errCode,
@@ -228,10 +228,10 @@ func TestUpdatePOESucc(t *testing.T) {
 		Owner:    "did:axn:001",
 		Metadata: []byte("this is metadata"),
 	}
-	sign := &structs.SignatureBody{
-		Creator:        "did:axn:arxan-provider",
-		Nonce:          "helloalice",
-		SignatureValue: "dGhpcyBpcyBzaWduYXR1cmUgdmFsdWU=",
+	sign := &structs.SignatureParam{
+		Creator:    "did:axn:arxan-provider",
+		Nonce:      "helloalice",
+		PrivateKey: "WBZNmTTf34Kg+pQOTSIRL+JeQYDfj7InWc0A/9kvNvQSI8Ue8iRD8gn9CNmGO2EjJILF/3RELmEcbuS5G0d+Mg==",
 	}
 	payload := &structs.WalletResponse{
 		TransactionIds: []string{transID},
@@ -290,10 +290,10 @@ func TestUpdatePOEFail(t *testing.T) {
 		Owner:    "did:axn:001",
 		Metadata: []byte("this is metadata"),
 	}
-	sign := &structs.SignatureBody{
-		Creator:        "did:axn:arxan-provider",
-		Nonce:          "helloalice",
-		SignatureValue: "dGhpcyBpcyBzaWduYXR1cmUgdmFsdWU=",
+	sign := &structs.SignatureParam{
+		Creator:    "did:axn:arxan-provider",
+		Nonce:      "helloalice",
+		PrivateKey: "WBZNmTTf34Kg+pQOTSIRL+JeQYDfj7InWc0A/9kvNvQSI8Ue8iRD8gn9CNmGO2EjJILF/3RELmEcbuS5G0d+Mg==",
 	}
 	respBody := &rtstructs.Response{
 		ErrCode:    errCode,
@@ -342,10 +342,10 @@ func TestUpdatePOEFailErrCode(t *testing.T) {
 		Owner:    "did:axn:001",
 		Metadata: []byte("this is metadata"),
 	}
-	sign := &structs.SignatureBody{
-		Creator:        "did:axn:arxan-provider",
-		Nonce:          "helloalice",
-		SignatureValue: "dGhpcyBpcyBzaWduYXR1cmUgdmFsdWU=",
+	sign := &structs.SignatureParam{
+		Creator:    "did:axn:arxan-provider",
+		Nonce:      "helloalice",
+		PrivateKey: "WBZNmTTf34Kg+pQOTSIRL+JeQYDfj7InWc0A/9kvNvQSI8Ue8iRD8gn9CNmGO2EjJILF/3RELmEcbuS5G0d+Mg==",
 	}
 	respBody := &rtstructs.Response{
 		ErrCode:    errCode,
