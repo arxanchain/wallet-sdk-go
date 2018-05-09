@@ -53,7 +53,7 @@ func TestIssueCTokenSucc(t *testing.T) {
 		SignatureValue: "dGhpcyBpcyBzaWduYXR1cmUgdmFsdWU=",
 	}
 	payload := &structs.WalletResponse{
-		CoinId:         ctokenID,
+		TokenId:        ctokenID,
 		TransactionIds: []string{transID},
 	}
 	byPayload, err := json.Marshal(payload)
@@ -90,7 +90,7 @@ func TestIssueCTokenSucc(t *testing.T) {
 	if resp.TransactionIds[0] != transID {
 		t.Fatalf("response transaction id should be %v", transID)
 	}
-	if resp.CoinId != ctokenID {
+	if resp.TokenId != ctokenID {
 		t.Fatalf("response colored token id should be %v", ctokenID)
 	}
 }
@@ -230,7 +230,7 @@ func TestIssueAssetSucc(t *testing.T) {
 		SignatureValue: "dGhpcyBpcyBzaWduYXR1cmUgdmFsdWU=",
 	}
 	payload := &structs.WalletResponse{
-		CoinId:         ctokenID,
+		TokenId:        ctokenID,
 		TransactionIds: []string{transID},
 	}
 	byPayload, err := json.Marshal(payload)
@@ -267,7 +267,7 @@ func TestIssueAssetSucc(t *testing.T) {
 	if resp.TransactionIds[0] != transID {
 		t.Fatalf("response transaction id should be %v", transID)
 	}
-	if resp.CoinId != ctokenID {
+	if resp.TokenId != ctokenID {
 		t.Fatalf("response colored token id should be %v", ctokenID)
 	}
 }
@@ -393,14 +393,14 @@ func TestTransferCTokenSucc(t *testing.T) {
 	)
 
 	//request body & response body
-	reqBody := &structs.TransferBody{
+	reqBody := &structs.TransferCTokenBody{
 		From:    "did:axn:001",
 		To:      "did:axn:002",
 		AssetId: "asset-id-001",
-		Coins: []*structs.CoinAmount{
+		Tokens: []*structs.TokenAmount{
 			{
-				CoinId: "colored-token-id-001",
-				Amount: 500,
+				TokenId: "colored-token-id-001",
+				Amount:  500,
 			},
 		},
 	}
@@ -460,14 +460,14 @@ func TestTransferCTokenFail(t *testing.T) {
 	)
 
 	//request body & response body
-	reqBody := &structs.TransferBody{
+	reqBody := &structs.TransferCTokenBody{
 		From:    "did:axn:001",
 		To:      "did:axn:002",
 		AssetId: "asset-id-001",
-		Coins: []*structs.CoinAmount{
+		Tokens: []*structs.TokenAmount{
 			{
-				CoinId: "colored-token-id-001",
-				Amount: 500,
+				TokenId: "colored-token-id-001",
+				Amount:  500,
 			},
 		},
 	}
@@ -517,14 +517,14 @@ func TestTransferCTokenFailErrCode(t *testing.T) {
 	)
 
 	//request body & response body
-	reqBody := &structs.TransferBody{
+	reqBody := &structs.TransferCTokenBody{
 		From:    "did:axn:001",
 		To:      "did:axn:002",
 		AssetId: "asset-id-001",
-		Coins: []*structs.CoinAmount{
+		Tokens: []*structs.TokenAmount{
 			{
-				CoinId: "colored-token-id-001",
-				Amount: 500,
+				TokenId: "colored-token-id-001",
+				Amount:  500,
 			},
 		},
 	}
