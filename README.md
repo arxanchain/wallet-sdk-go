@@ -38,6 +38,11 @@ config := &restapi.Config{
 		Enable:         true,
 		CertsStorePath: "/path/to/client/certs",
 	},
+	EnterpriseSignParam: &restapi.EnterpriseSignParam{
+		Creator: "did:axn:09e2fc68-f51e-4aff-b6e4-427cce3ed1af",
+		Nonce: "nonce",
+		PrivateKey: "RiQ+oEuaelf2aecUZvG7xrWr+p43ZfjGZYfDCXfQD+ku0xY5BXP8kIKhiqzKRvfyKBKM3y7V9O1bF7X3M9mxkQ==",
+	},
 }
 walletClient, err := walletapi.NewWalletClient(config)
 if err != nil {
@@ -60,6 +65,11 @@ path to client certificates (contains the platform public cert and user private 
 encryption, and verifying signature.  For security requirement, enable crypto is
 recommended for production environment.
 
+* Enterprisesignparam: Enterprise signature parameter, used to sign UTXO records for AXT fee.
+	- Creator: Enterprise wallet did
+	- Nonce: Signature random nonce string
+	- PrivateKey: The ed25519 private key of enterprise wallet
+
 About how to apply API-Key, please refer to [Apikey Application](http://www.arxanfintech.com/infocenter/html/baas/enterprise/v1.2/api-access.html#api-access-ref)
 
 ## Register wallet account
@@ -70,8 +80,10 @@ as follows:
 ```code
 // Build request header
 header := http.Header{}
-// Setting callback URL is optional
-header.Set("Callback-Url", "http://callback-url")
+// If you use synchronous invoking mode, set following header
+header.Set("Bc-Invoke-Mode", "sync")
+// If you use asynchronous invoking mode, set following header
+// header.Set("Callback-Url", "http://callback-url")
 
 // Register wallet account
 registerBody := &structs.RegisterWalletBody{
@@ -92,6 +104,10 @@ fmt.Printf("Register wallet succ.\nwallet id: %v\nED25519 public key: %v\nED2551
 * `Callback-Url` in the http header is optional. You only need to set it
 if you need to receive blockchain transaction events.
 
+* If you want to switch to synchronous invoking mode, set 'BC-Invoke-Mode'
+header to 'sync' value. In synchronous mode, it will not return until the
+blockchain transaction is confirmed.
+
 ## Create POE digital asset and upload file
 
 After creating the wallet account, you can create POE assets for this account as follows:
@@ -108,7 +124,7 @@ signParam := &structs.SignatureParam{
 	Nonce:      "nonce",
 	PrivateKey: keyPair.PrivateKey,
 }
-resp, err = walletClient.CreatePOESign(header, poeBody, signParam)
+resp, err = walletClient.CreatePOE(header, poeBody, signParam)
 if err != nil {
 	fmt.Printf("CreatePOE fail: %v\n", err)
 	return
@@ -153,7 +169,7 @@ signParam = &structs.SignatureParam{
 	Nonce:      "nonce",
 	PrivateKey: keyPair.PrivateKey,
 }
-resp, err = walletClient.IssueCTokenSign(header, issueBody, signParam)
+resp, err = walletClient.IssueCToken(header, issueBody, signParam)
 if err != nil {
 	fmt.Printf("Issue colored token fail: %v\n", err)
 	return
@@ -171,13 +187,13 @@ colored tokens, and can transfer some of them to other wallet accounts.
 
 ```code
 // Transfer colored token
-transferBody := &structs.TransferBody{
+transferBody := &structs.TransferCTokenBody{
 	From: string(walletID),
 	To:   string(toID),
-	Coins: []*structs.CoinAmount{
-		&structs.CoinAmount{
-			CoinId: tokenId,
-			Amount: 400,
+	Tokens: []*structs.TokenAmount{
+		&structs.TokenAmount{
+			TokenId: tokenId,
+			Amount:  100,
 		},
 	},
 }
@@ -186,7 +202,7 @@ signParam = &structs.SignatureParam{
 	Nonce:      "nonce",
 	PrivateKey: keyPair.PrivateKey,
 }
-resp, err = walletClient.TransferCTokenSign(header, transferBody, signParam)
+resp, err = walletClient.TransferCToken(header, transferBody, signParam)
 if err != nil {
 	fmt.Printf("Transfer colored token fail: %v\n", err)
 	return
