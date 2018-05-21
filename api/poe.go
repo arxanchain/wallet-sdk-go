@@ -56,7 +56,7 @@ func (w *WalletClient) CreatePOE(header http.Header, body *structs.POEBody, sign
 	}
 	sign, err := buildSignatureBody(signParams, reqPayload)
 	if err != nil {
-		return
+		return nil, err
 	}
 
 	// Build http request
@@ -121,7 +121,7 @@ func (w *WalletClient) UpdatePOE(header http.Header, body *structs.POEBody, sign
 	}
 	sign, err := buildSignatureBody(signParams, reqPayload)
 	if err != nil {
-		return
+		return nil, err
 	}
 
 	// Build http request

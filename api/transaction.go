@@ -93,7 +93,7 @@ func (w *WalletClient) SendIssueCTokenProposal(header http.Header, body *structs
 	}
 	sign, err := buildSignatureBody(signParams, reqPayload)
 	if err != nil {
-		return
+		return nil, err
 	}
 
 	// Build request body
@@ -259,7 +259,7 @@ func (w *WalletClient) SendIssueAssetProposal(header http.Header, body *structs.
 	}
 	sign, err := buildSignatureBody(signParams, reqPayload)
 	if err != nil {
-		return
+		return nil, err
 	}
 
 	// Build request body
@@ -325,7 +325,7 @@ func (w *WalletClient) SendTransferCTokenProposal(header http.Header, body *stru
 	}
 	sign, err := buildSignatureBody(signParams, reqPayload)
 	if err != nil {
-		return
+		return nil, err
 	}
 
 	// Build request body
@@ -391,7 +391,7 @@ func (w *WalletClient) SendTransferAssetProposal(header http.Header, body *struc
 	}
 	sign, err := buildSignatureBody(signParams, reqPayload)
 	if err != nil {
-		return
+		return nil, err
 	}
 
 	// Build request body

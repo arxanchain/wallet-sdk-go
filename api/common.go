@@ -20,6 +20,8 @@ import (
 	"fmt"
 
 	"github.com/arxanchain/sdk-go-common/crypto/sign/ed25519"
+	"github.com/arxanchain/sdk-go-common/errors"
+	"github.com/arxanchain/sdk-go-common/rest"
 	"github.com/arxanchain/sdk-go-common/structs"
 	"github.com/arxanchain/sdk-go-common/utils"
 )
@@ -50,7 +52,7 @@ func buildSignature(signParams *structs.SignatureParam, data []byte) (*structs.S
 
 	privateKey, err := utils.DecodeBase64(signParams.PrivateKey)
 	if err != nil {
-		return nil, err
+		return nil, rest.CodedError(errors.SDKInvalidBase64Data, err.Error())
 	}
 
 	pri := &ed25519.PrivateKey{
