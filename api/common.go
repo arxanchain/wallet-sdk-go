@@ -20,6 +20,8 @@ import (
 	"fmt"
 
 	"github.com/arxanchain/sdk-go-common/crypto/sign/ed25519"
+	"github.com/arxanchain/sdk-go-common/errors"
+	"github.com/arxanchain/sdk-go-common/rest"
 	"github.com/arxanchain/sdk-go-common/structs"
 	"github.com/arxanchain/sdk-go-common/utils"
 )
@@ -41,7 +43,7 @@ func checkSignParams(signParams *structs.SignatureParam) error {
 	return nil
 }
 
-func buildSignatureBody(signParams *structs.SignatureParam, data []byte) (*structs.SignatureBody, error) {
+func buildSignature(signParams *structs.SignatureParam, data []byte) (*structs.Signature, error) {
 	var err error
 	err = checkSignParams(signParams)
 	if err != nil {
@@ -50,7 +52,7 @@ func buildSignatureBody(signParams *structs.SignatureParam, data []byte) (*struc
 
 	privateKey, err := utils.DecodeBase64(signParams.PrivateKey)
 	if err != nil {
-		return nil, err
+		return nil, rest.CodedError(errors.SDKInvalidBase64Data, err.Error())
 	}
 
 	pri := &ed25519.PrivateKey{
@@ -70,6 +72,15 @@ func buildSignatureBody(signParams *structs.SignatureParam, data []byte) (*struc
 	if err != nil {
 		return nil, err
 	}
+
+	return signData, nil
+}
+
+func buildSignatureBody(signParams *structs.SignatureParam, data []byte) (*structs.SignatureBody, error) {
+	signData, err := buildSignature(signParams, data)
+	if err != nil {
+		return nil, err
+	}
 	signBase64 := utils.EncodeBase64(signData.Sign)
 
 	sign := &structs.SignatureBody{
@@ -77,6 +88,23 @@ func buildSignatureBody(signParams *structs.SignatureParam, data []byte) (*struc
 		Created:        signParams.Created,
 		Nonce:          signParams.Nonce,
 		SignatureValue: signBase64,
+	}
+
+	return sign, nil
+}
+
+// without base64 encode
+func buildSignatureBodyBase(signParams *structs.SignatureParam, data []byte) (*structs.SignatureBody, error) {
+	signData, err := buildSignature(signParams, data)
+	if err != nil {
+		return nil, err
+	}
+
+	sign := &structs.SignatureBody{
+		Creator:        signParams.Creator,
+		Created:        signParams.Created,
+		Nonce:          signParams.Nonce,
+		SignatureValue: string(signData.Sign),
 	}
 
 	return sign, nil
