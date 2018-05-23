@@ -62,8 +62,12 @@ func (w *WalletClient) IssueCToken(header http.Header, body *structs.IssueBody, 
 
 	// 3 call ProcessTx to transfer formally
 	result, err = w.ProcessTx(header, txs)
+	if err != nil {
+		err = fmt.Errorf("processTx error: %v", err)
+		return nil, err
+	}
 	result.TokenId = issuePreRsp.TokenId
-	return result, err
+	return result, nil
 
 }
 
