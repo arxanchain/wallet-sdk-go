@@ -27,6 +27,8 @@ import (
 	"os"
 	"reflect"
 
+	"strconv"
+
 	"github.com/arxanchain/sdk-go-common/errors"
 	"github.com/arxanchain/sdk-go-common/rest"
 	restapi "github.com/arxanchain/sdk-go-common/rest/api"
@@ -205,7 +207,7 @@ func (w *WalletClient) QueryPOE(header http.Header, id structs.Identifier) (resu
 //
 // poeFile parameter is the path to file to be uploaded.
 //
-func (w *WalletClient) UploadPOEFile(header http.Header, poeID string, poeFile string) (result *structs.WalletResponse, err error) {
+func (w *WalletClient) UploadPOEFile(header http.Header, poeID string, poeFile string, readOnly bool) (result *structs.WalletResponse, err error) {
 	log.Println("Call UploadPOEFile...")
 
 	if poeID == "" {
@@ -228,6 +230,15 @@ func (w *WalletClient) UploadPOEFile(header http.Header, poeID string, poeFile s
 	}
 
 	log.Printf("Write %s field to form succ", structs.OffchainPOEID)
+
+	// Create readOnly form field
+	err = writer.WriteField(structs.OffchainReadOnly, strconv.FormatBool(readOnly))
+	if err != nil {
+		log.Printf("Write %s field to form fail: %v", structs.OffchainReadOnly, err)
+		return
+	}
+
+	log.Printf("Write %s field to form succ", structs.OffchainReadOnly)
 
 	// Create poeFile form field
 	formFile, err := writer.CreateFormFile(structs.OffchainPOEFile, poeFile)
