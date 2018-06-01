@@ -593,7 +593,7 @@ func TestUploadPOEFileSucc(t *testing.T) {
 	header.Set("X-Auth-Token", token)
 
 	//do create poe asset
-	resp, err := walletClient.UploadPOEFile(header, poeID, poeFile)
+	resp, err := walletClient.UploadPOEFile(header, poeID, poeFile, false)
 	if err != nil {
 		t.Fatalf("create poe asset fail: %v", err)
 	}
@@ -646,7 +646,7 @@ func TestUploadPOEFileFail(t *testing.T) {
 	header.Set("X-Auth-Token", token)
 
 	// do create poe asset
-	resp, err := walletClient.UploadPOEFile(header, poeID, poeFile)
+	resp, err := walletClient.UploadPOEFile(header, poeID, poeFile, false)
 	if err == nil {
 		t.Fatalf("err should not be nil when creating poe asset fail")
 	}
@@ -693,7 +693,7 @@ func TestUploadPOEFileFailErrCode(t *testing.T) {
 	header.Set("X-Auth-Token", token)
 
 	// do create poe asset
-	resp, err := walletClient.UploadPOEFile(header, poeID, poeFile)
+	resp, err := walletClient.UploadPOEFile(header, poeID, poeFile, false)
 	if err == nil {
 		t.Fatalf("err should not be nil when creating poe asset fail")
 	}
