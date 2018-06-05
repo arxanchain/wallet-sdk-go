@@ -48,7 +48,6 @@ func (w *WalletClient) IssueCToken(header http.Header, body *structs.IssueBody, 
 	// 1 send transfer proposal to get wallet.Tx
 	issuePreRsp, err := w.SendIssueCTokenProposal(header, body, signParams)
 	if err != nil {
-		err = fmt.Errorf("send IssueCToken Proposal error: %v", err)
 		return nil, err
 	}
 	txs := issuePreRsp.Txs
@@ -63,7 +62,6 @@ func (w *WalletClient) IssueCToken(header http.Header, body *structs.IssueBody, 
 	// 3 call ProcessTx to transfer formally
 	result, err = w.ProcessTx(header, txs)
 	if err != nil {
-		err = fmt.Errorf("processTx error: %v", err)
 		return nil, err
 	}
 	result.TokenId = issuePreRsp.TokenId
@@ -156,7 +154,6 @@ func (w *WalletClient) IssueAsset(header http.Header, body *structs.IssueAssetBo
 	// 1 send proposal to get wallet.Tx
 	txs, err := w.SendIssueAssetProposal(header, body, signParams)
 	if err != nil {
-		err = fmt.Errorf("send IssueAsset Proposal error: %v", err)
 		return nil, err
 	}
 
@@ -189,7 +186,6 @@ func (w *WalletClient) TransferCToken(header http.Header, body *structs.Transfer
 	// 1 send transfer proposal to get wallet.Tx
 	txs, err := w.SendTransferCTokenProposal(header, body, signParams)
 	if err != nil {
-		err = fmt.Errorf("send TransferCToken Proposal error: %v", err)
 		return nil, err
 	}
 
@@ -222,7 +218,6 @@ func (w *WalletClient) TransferAsset(header http.Header, body *structs.TransferA
 	// 1 send transfer proposal to get wallet.Tx
 	txs, err := w.SendTransferAssetProposal(header, body, signParams)
 	if err != nil {
-		err = fmt.Errorf("send TransferAsset Proposal error: %v", err)
 		return nil, err
 	}
 
@@ -461,7 +456,7 @@ func (w *WalletClient) signTx(tx *wallet.TX, signParams *structs.SignatureParam)
 		utxoSignature := &wallet.UTXOSignature{}
 		err = json.Unmarshal(txout.Script, utxoSignature)
 		if err != nil {
-			err = fmt.Errorf(":Unmarshal script error: %v", err)
+			err = fmt.Errorf("Unmarshal script error: %v", err)
 			return err
 		}
 		if utxoSignature.PublicKey == nil {
