@@ -26,12 +26,13 @@ import (
 	"github.com/arxanchain/sdk-go-common/rest"
 	"github.com/arxanchain/sdk-go-common/rest/api"
 	rtstructs "github.com/arxanchain/sdk-go-common/rest/structs"
-	"github.com/arxanchain/sdk-go-common/structs"
+	"github.com/arxanchain/sdk-go-common/structs/did"
+	"github.com/arxanchain/sdk-go-common/structs/wallet"
 	gock "gopkg.in/h2non/gock.v1"
 )
 
 var (
-	walletClient structs.IWalletClient
+	walletClient wallet.IWalletClient
 )
 
 func initWalletClient(t *testing.T) {
@@ -59,16 +60,16 @@ func TestRegisterSucc(t *testing.T) {
 	)
 
 	//request body & response body
-	reqBody := &structs.RegisterWalletBody{
+	reqBody := &wallet.RegisterWalletBody{
 		Type:   "Organization",
 		Access: "alice",
 		Secret: "123456",
 	}
-	payload := &structs.WalletResponse{
+	payload := &wallet.WalletResponse{
 		Id:       id,
 		Endpoint: endpoint,
 		Created:  created,
-		KeyPair: &structs.KeyPair{
+		KeyPair: &wallet.KeyPair{
 			PrivateKey: privateKey,
 			PublicKey:  publicKey,
 		},
@@ -133,7 +134,7 @@ func TestRegisterFail(t *testing.T) {
 	)
 
 	//request body & response body
-	reqBody := &structs.RegisterWalletBody{
+	reqBody := &wallet.RegisterWalletBody{
 		Type:   "Organization",
 		Access: "alice",
 		Secret: "123456",
@@ -179,7 +180,7 @@ func TestRegisterFailErrCode(t *testing.T) {
 	)
 
 	//request body & response body
-	reqBody := &structs.RegisterWalletBody{
+	reqBody := &wallet.RegisterWalletBody{
 		Type:   "Organization",
 		Access: "alice",
 		Secret: "123456",
@@ -236,15 +237,15 @@ func TestRegisterSubWalletSucc(t *testing.T) {
 	)
 
 	//request body & response body
-	reqBody := &structs.RegisterSubWalletBody{
+	reqBody := &wallet.RegisterSubWalletBody{
 		Id:   "did:axn:001",
 		Type: "cash",
 	}
-	payload := &structs.WalletResponse{
+	payload := &wallet.WalletResponse{
 		Id:       id,
 		Endpoint: endpoint,
 		Created:  created,
-		KeyPair: &structs.KeyPair{
+		KeyPair: &wallet.KeyPair{
 			PrivateKey: privateKey,
 			PublicKey:  publicKey,
 		},
@@ -309,7 +310,7 @@ func TestRegisterSubWalletFail(t *testing.T) {
 	)
 
 	//request body & response body
-	reqBody := &structs.RegisterSubWalletBody{
+	reqBody := &wallet.RegisterSubWalletBody{
 		Id:   "did:axn:001",
 		Type: "cash",
 	}
@@ -354,7 +355,7 @@ func TestRegisterSubWalletFailErrCode(t *testing.T) {
 	)
 
 	//request body & response body
-	reqBody := &structs.RegisterSubWalletBody{
+	reqBody := &wallet.RegisterSubWalletBody{
 		Id:   "did:axn:001",
 		Type: "cash",
 	}
@@ -410,14 +411,14 @@ func TestGetWalletBalanceSucc(t *testing.T) {
 	)
 
 	//build response body
-	payload := &structs.WalletBalance{
-		ColoredTokens: map[string]*structs.CTokenBalance{
+	payload := &wallet.WalletBalance{
+		ColoredTokens: map[string]*wallet.CTokenBalance{
 			coinID: {
 				Id:     coinID,
 				Amount: coinAmount,
 			},
 		},
-		DigitalAssets: map[string]*structs.AssetBalance{
+		DigitalAssets: map[string]*wallet.AssetBalance{
 			assetID: {
 				Id:     assetID,
 				Amount: 1,
@@ -575,17 +576,17 @@ func TestGetWalletInfoSucc(t *testing.T) {
 
 	const (
 		token      = "user-token-001"
-		id         = structs.Identifier("did:axn:001")
-		endpoint   = structs.DidEndpoint("endpoint-001")
-		walletType = structs.DidType("Organization")
+		id         = did.Identifier("did:axn:001")
+		endpoint   = did.DidEndpoint("endpoint-001")
+		walletType = did.DidType("Organization")
 	)
 
 	//build response body
-	payload := &structs.WalletInfo{
+	payload := &wallet.WalletInfo{
 		Id:       id,
 		Type:     walletType,
 		Endpoint: endpoint,
-		Status:   structs.DSValid,
+		Status:   did.DSValid,
 		Created:  55555,
 		Updated:  66666,
 	}
@@ -626,8 +627,8 @@ func TestGetWalletInfoSucc(t *testing.T) {
 	if result.Endpoint != endpoint {
 		t.Fatalf("wallet endpoint should be %v", endpoint)
 	}
-	if result.Status != structs.DSValid {
-		t.Fatalf("wallet status should be %v", structs.DSValid)
+	if result.Status != did.DSValid {
+		t.Fatalf("wallet status should be %v", did.DSValid)
 	}
 }
 
