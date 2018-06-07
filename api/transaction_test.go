@@ -25,7 +25,8 @@ import (
 
 	"github.com/arxanchain/sdk-go-common/rest"
 	rtstructs "github.com/arxanchain/sdk-go-common/rest/structs"
-	"github.com/arxanchain/sdk-go-common/structs"
+	"github.com/arxanchain/sdk-go-common/structs/did"
+	"github.com/arxanchain/sdk-go-common/structs/wallet"
 	gock "gopkg.in/h2non/gock.v1"
 )
 
@@ -747,7 +748,7 @@ func TestQueryTransactionLogsSucc(t *testing.T) {
 
 	const (
 		token      = "user-token-001"
-		id         = structs.Identifier("did:axn:001")
+		id         = did.Identifier("did:axn:001")
 		txType     = "in"
 		walletAddr = "endpoint-001"
 		txID01     = "tx-id-001"
@@ -755,10 +756,10 @@ func TestQueryTransactionLogsSucc(t *testing.T) {
 	)
 
 	//build response body
-	payload := structs.TransactionLogs{
-		walletAddr: &structs.TransactionLog{
-			Utxo: []*structs.UTXO{
-				&structs.UTXO{
+	payload := wallet.TransactionLogs{
+		walletAddr: &wallet.TransactionLog{
+			Utxo: []*wallet.UTXO{
+				&wallet.UTXO{
 					SourceTxDataHash: "source-tx-data-hash",
 					Ix:               1,
 					CTokenId:         "ctokenid-001",
@@ -767,7 +768,7 @@ func TestQueryTransactionLogsSucc(t *testing.T) {
 					Addr:             "endpoint-who-will-receive-this-txout",
 					Until:            -1,
 					Script:           []byte("payload data be attached to this tx"),
-					CreatedAt: &structs.Timestamp{
+					CreatedAt: &wallet.Timestamp{
 						Seconds: 5555555,
 						Nanos:   0,
 					},
@@ -776,8 +777,8 @@ func TestQueryTransactionLogsSucc(t *testing.T) {
 					BCTxID:  txID01,
 				},
 			},
-			Stxo: []*structs.SpentTxOUT{
-				&structs.SpentTxOUT{
+			Stxo: []*wallet.SpentTxOUT{
+				&wallet.SpentTxOUT{
 					SourceTxDataHash: "source-tx-data-hash",
 					Ix:               2,
 					CTokenId:         "ctokenid-002",
@@ -786,12 +787,12 @@ func TestQueryTransactionLogsSucc(t *testing.T) {
 					Addr:             "endpoint-who-will-receive-this-txout",
 					Until:            -1,
 					Script:           []byte("payload data be attached to this tx"),
-					CreatedAt: &structs.Timestamp{
+					CreatedAt: &wallet.Timestamp{
 						Seconds: 6666666,
 						Nanos:   0,
 					},
 					SpentTxDataHash: "spent-tx-data-hash",
-					SpentAt: &structs.Timestamp{
+					SpentAt: &wallet.Timestamp{
 						Seconds: 6666667,
 						Nanos:   0,
 					},
