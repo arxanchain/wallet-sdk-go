@@ -41,10 +41,20 @@ import (
 // 'BC-Invoke-Mode' header to 'sync' value. In synchronous mode,
 // it will not return until the blockchain transaction is confirmed.
 //
+// The default key pair trust mode does not trust, it will required key pair.
+// If you had trust the key pair, it will required security code.
+//
 func (w *WalletClient) IssueCToken(header http.Header, body *wallet.IssueBody, signParams *pki.SignatureParam) (result *wallet.WalletResponse, err error) {
 	if body == nil {
 		err = fmt.Errorf("request payload invalid")
 		return
+	}
+
+	if w.s != nil {
+		signParams, err = w.queryPrivateKey(header, signParams)
+		if err != nil {
+			return
+		}
 	}
 
 	// 1 send transfer proposal to get wallet.Tx
@@ -80,12 +90,21 @@ func (w *WalletClient) IssueCToken(header http.Header, body *wallet.IssueBody, s
 // 'BC-Invoke-Mode' header to 'sync' value. In synchronous mode,
 // it will not return until the blockchain transaction is confirmed.
 //
+// The default key pair trust mode does not trust, it will required key pair.
+// If you had trust the key pair, it will required security code.
+//
 func (w *WalletClient) SendIssueCTokenProposal(header http.Header, body *wallet.IssueBody, signParams *pki.SignatureParam) (issueRsp *wallet.IssueCTokenPrepareResponse, err error) {
 	if body == nil {
 		err = fmt.Errorf("request payload invalid")
 		return nil, err
 	}
 
+	if w.s != nil {
+		signParams, err = w.queryPrivateKey(header, signParams)
+		if err != nil {
+			return
+		}
+	}
 	// Build http request
 	r := w.c.NewRequest("POST", "/v1/transaction/tokens/issue/prepare")
 	r.SetHeaders(header)
@@ -147,10 +166,20 @@ func (w *WalletClient) SendIssueCTokenProposal(header http.Header, body *wallet.
 // 'BC-Invoke-Mode' header to 'sync' value. In synchronous mode,
 // it will not return until the blockchain transaction is confirmed.
 //
+// The default key pair trust mode does not trust, it will required key pair.
+// If you had trust the key pair, it will required security code.
+//
 func (w *WalletClient) IssueAsset(header http.Header, body *wallet.IssueAssetBody, signParams *pki.SignatureParam) (result *wallet.WalletResponse, err error) {
 	if body == nil {
 		err = fmt.Errorf("request payload invalid")
 		return
+	}
+
+	if w.s != nil {
+		signParams, err = w.queryPrivateKey(header, signParams)
+		if err != nil {
+			return
+		}
 	}
 
 	// 1 send proposal to get wallet.Tx
@@ -179,10 +208,20 @@ func (w *WalletClient) IssueAsset(header http.Header, body *wallet.IssueAssetBod
 // 'BC-Invoke-Mode' header to 'sync' value. In synchronous mode,
 // it will not return until the blockchain transaction is confirmed.
 //
+// The default key pair trust mode does not trust, it will required key pair.
+// If you had trust the key pair, it will required security code.
+//
 func (w *WalletClient) TransferCToken(header http.Header, body *wallet.TransferCTokenBody, signParams *pki.SignatureParam) (result *wallet.WalletResponse, err error) {
 	if body == nil {
 		err = fmt.Errorf("request payload invalid")
 		return
+	}
+
+	if w.s != nil {
+		signParams, err = w.queryPrivateKey(header, signParams)
+		if err != nil {
+			return
+		}
 	}
 
 	// 1 send transfer proposal to get wallet.Tx
@@ -211,10 +250,20 @@ func (w *WalletClient) TransferCToken(header http.Header, body *wallet.TransferC
 // 'BC-Invoke-Mode' header to 'sync' value. In synchronous mode,
 // it will not return until the blockchain transaction is confirmed.
 //
+// The default key pair trust mode does not trust, it will required key pair.
+// If you had trust the key pair, it will required security code.
+//
 func (w *WalletClient) TransferAsset(header http.Header, body *wallet.TransferAssetBody, signParams *pki.SignatureParam) (result *wallet.WalletResponse, err error) {
 	if body == nil {
 		err = fmt.Errorf("request payload invalid")
 		return
+	}
+
+	if w.s != nil {
+		signParams, err = w.queryPrivateKey(header, signParams)
+		if err != nil {
+			return
+		}
 	}
 
 	// 1 send transfer proposal to get wallet.Tx
@@ -243,10 +292,20 @@ func (w *WalletClient) TransferAsset(header http.Header, body *wallet.TransferAs
 // 'BC-Invoke-Mode' header to 'sync' value. In synchronous mode,
 // it will not return until the blockchain transaction is confirmed.
 //
+// The default key pair trust mode does not trust, it will required key pair.
+// If you had trust the key pair, it will required security code.
+//
 func (w *WalletClient) SendIssueAssetProposal(header http.Header, body *wallet.IssueAssetBody, signParams *pki.SignatureParam) (result []*pw.TX, err error) {
 	if body == nil {
 		err = fmt.Errorf("request payload invalid")
 		return nil, err
+	}
+
+	if w.s != nil {
+		signParams, err = w.queryPrivateKey(header, signParams)
+		if err != nil {
+			return
+		}
 	}
 
 	// Build http request
@@ -309,10 +368,20 @@ func (w *WalletClient) SendIssueAssetProposal(header http.Header, body *wallet.I
 // 'BC-Invoke-Mode' header to 'sync' value. In synchronous mode,
 // it will not return until the blockchain transaction is confirmed.
 //
+// The default key pair trust mode does not trust, it will required key pair.
+// If you had trust the key pair, it will required security code.
+//
 func (w *WalletClient) SendTransferCTokenProposal(header http.Header, body *wallet.TransferCTokenBody, signParams *pki.SignatureParam) (result []*pw.TX, err error) {
 	if body == nil {
 		err = fmt.Errorf("request payload invalid")
 		return nil, err
+	}
+
+	if w.s != nil {
+		signParams, err = w.queryPrivateKey(header, signParams)
+		if err != nil {
+			return
+		}
 	}
 
 	// Build http request
@@ -375,10 +444,20 @@ func (w *WalletClient) SendTransferCTokenProposal(header http.Header, body *wall
 // 'BC-Invoke-Mode' header to 'sync' value. In synchronous mode,
 // it will not return until the blockchain transaction is confirmed.
 //
+// The default key pair trust mode does not trust, it will required key pair.
+// If you had trust the key pair, it will required security code.
+//
 func (w *WalletClient) SendTransferAssetProposal(header http.Header, body *wallet.TransferAssetBody, signParams *pki.SignatureParam) (result []*pw.TX, err error) {
 	if body == nil {
 		err = fmt.Errorf("request payload invalid")
 		return nil, err
+	}
+
+	if w.s != nil {
+		signParams, err = w.queryPrivateKey(header, signParams)
+		if err != nil {
+			return
+		}
 	}
 
 	// Build http request

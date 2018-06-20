@@ -43,14 +43,20 @@ import (
 // The default invoking mode is asynchronous, it will return
 // without waiting for blockchain transaction confirmation.
 //
-// If you want to switch to synchronous invoking mode, set
-// 'BC-Invoke-Mode' header to 'sync' value. In synchronous mode,
-// it will not return until the blockchain transaction is confirmed.
+// The default key pair trust mode does not trust, it will required key pair.
+// If you had trust the key pair, it will required security code.
 //
 func (w *WalletClient) CreatePOE(header http.Header, body *wallet.POEBody, signParams *pki.SignatureParam) (result *wallet.WalletResponse, err error) {
 	if body == nil {
 		err = fmt.Errorf("request payload invalid")
 		return
+	}
+
+	if w.s != nil {
+		signParams, err = w.queryPrivateKey(header, signParams)
+		if err != nil {
+			return
+		}
 	}
 
 	// Build request signature
@@ -108,14 +114,20 @@ func (w *WalletClient) CreatePOE(header http.Header, body *wallet.POEBody, signP
 // The default invoking mode is asynchronous, it will return
 // without waiting for blockchain transaction confirmation.
 //
-// If you want to switch to synchronous invoking mode, set
-// 'BC-Invoke-Mode' header to 'sync' value. In synchronous mode,
-// it will not return until the blockchain transaction is confirmed.
+// The default key pair trust mode does not trust, it will required key pair.
+// If you had trust the key pair, it will required security code.
 //
 func (w *WalletClient) UpdatePOE(header http.Header, body *wallet.POEBody, signParams *pki.SignatureParam) (result *wallet.WalletResponse, err error) {
 	if body == nil {
 		err = fmt.Errorf("request payload invalid")
 		return
+	}
+
+	if w.s != nil {
+		signParams, err = w.queryPrivateKey(header, signParams)
+		if err != nil {
+			return
+		}
 	}
 
 	// Build request signature

@@ -22,18 +22,24 @@ import (
 	"net/http"
 	"reflect"
 
+	safeboxapi "github.com/arxanchain/safebox-sdk-go/api"
 	"github.com/arxanchain/sdk-go-common/errors"
 	"github.com/arxanchain/sdk-go-common/rest"
 	restapi "github.com/arxanchain/sdk-go-common/rest/api"
 	rtstructs "github.com/arxanchain/sdk-go-common/rest/structs"
+	"github.com/arxanchain/sdk-go-common/structs"
 	"github.com/arxanchain/sdk-go-common/structs/did"
+	"github.com/arxanchain/sdk-go-common/structs/pki"
+	"github.com/arxanchain/sdk-go-common/structs/safebox"
 	"github.com/arxanchain/sdk-go-common/structs/wallet"
 )
 
 // WalletClient is a http agent to wallet service.
 //
 type WalletClient struct {
-	c *restapi.Client
+	c   *restapi.Client
+	s   safebox.ISafeboxClient
+	cfg *restapi.Config
 }
 
 // NewWalletClient returns a WalletClient instance.
@@ -42,6 +48,20 @@ func NewWalletClient(config *restapi.Config) (*WalletClient, error) {
 	if config == nil {
 		return nil, fmt.Errorf("config must be set")
 	}
+
+	var s safebox.ISafeboxClient
+	var err error
+	if config.TrusteeKeyPairEnable {
+		temConfig := *config
+		if temConfig.RouteTag == "" {
+			temConfig.RouteTag = "safebox"
+		}
+		s, err = safeboxapi.NewSafeboxClient(&temConfig)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	if config.RouteTag == "" {
 		config.RouteTag = "wallet-ng"
 	}
@@ -50,7 +70,8 @@ func NewWalletClient(config *restapi.Config) (*WalletClient, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &WalletClient{c: c}, nil
+
+	return &WalletClient{c: c, s: s, cfg: config}, nil
 }
 
 // Register is used to register user wallet.
@@ -61,6 +82,9 @@ func NewWalletClient(config *restapi.Config) (*WalletClient, error) {
 // If you want to switch to synchronous invoking mode, set
 // 'BC-Invoke-Mode' header to 'sync' value. In synchronous mode,
 // it will not return until the blockchain transaction is confirmed.
+//
+// The default key pair trust mode does not trust, it will return the key pair.
+// If you want to trust the key pair, it will return the security code.
 //
 func (w *WalletClient) Register(header http.Header, body *wallet.RegisterWalletBody) (result *wallet.WalletResponse, err error) {
 	if body == nil {
@@ -99,6 +123,57 @@ func (w *WalletClient) Register(header http.Header, body *wallet.RegisterWalletB
 
 	err = json.Unmarshal([]byte(payload), &result)
 
+	result, err = w.trusteeKeyPair(header, result)
+	return
+}
+
+func (w *WalletClient) trusteeKeyPair(header http.Header, req *wallet.WalletResponse) (result *wallet.WalletResponse, err error) {
+	result = req
+	if w.s == nil {
+		return
+	}
+
+	if w.cfg.ApiKey != "" {
+		header.Set(structs.APIKeyHeader, w.cfg.ApiKey)
+	}
+	response, err := w.s.TrusteeKeyPair(header, &safebox.SaveKeyPairRequetBody{
+		UserDid:    string(req.Id),
+		PrivateKey: req.KeyPair.PrivateKey,
+		PublicKey:  req.KeyPair.PublicKey,
+	})
+	if err != nil {
+		result = nil
+		return
+	}
+	result.KeyPair.PrivateKey = ""
+	result.SecurityCode = response.Code
+
+	return
+}
+
+func (w *WalletClient) queryPrivateKey(header http.Header, signParams *pki.SignatureParam) (result *pki.SignatureParam, err error) {
+	result = signParams
+	if w.s == nil {
+		return
+	}
+	if result.PrivateKey != "" && result.SecurityCode == "" {
+		return
+	}
+
+	if w.cfg.ApiKey != "" {
+		header.Set(structs.APIKeyHeader, w.cfg.ApiKey)
+	}
+	response, err := w.s.QueryPrivateKey(header, &safebox.OperateKeyInfo{
+		UserDid: string(result.Creator),
+		Code:    result.SecurityCode,
+	})
+	if err != nil {
+		result = nil
+		return
+	}
+	result.SecurityCode = ""
+	result.PrivateKey = response.PrivateKey
+
 	return
 }
 
@@ -110,6 +185,9 @@ func (w *WalletClient) Register(header http.Header, body *wallet.RegisterWalletB
 // If you want to switch to synchronous invoking mode, set
 // 'BC-Invoke-Mode' header to 'sync' value. In synchronous mode,
 // it will not return until the blockchain transaction is confirmed.
+//
+// The default key pair trust mode does not trust, it will return the key pair.
+// If you want to trust the key pair, it will return the security code.
 //
 func (w *WalletClient) RegisterSubWallet(header http.Header, body *wallet.RegisterSubWalletBody) (result *wallet.WalletResponse, err error) {
 	if body == nil {
@@ -147,6 +225,8 @@ func (w *WalletClient) RegisterSubWallet(header http.Header, body *wallet.Regist
 	}
 
 	err = json.Unmarshal([]byte(payload), &result)
+
+	result, err = w.trusteeKeyPair(header, result)
 
 	return
 }
