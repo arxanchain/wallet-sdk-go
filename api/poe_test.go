@@ -27,7 +27,9 @@ import (
 
 	"github.com/arxanchain/sdk-go-common/rest"
 	rtstructs "github.com/arxanchain/sdk-go-common/rest/structs"
-	"github.com/arxanchain/sdk-go-common/structs"
+	"github.com/arxanchain/sdk-go-common/structs/did"
+	"github.com/arxanchain/sdk-go-common/structs/pki"
+	"github.com/arxanchain/sdk-go-common/structs/wallet"
 	gock "gopkg.in/h2non/gock.v1"
 )
 
@@ -44,17 +46,17 @@ func TestCreatePOESucc(t *testing.T) {
 	)
 
 	//request body & response body
-	reqBody := &structs.POEBody{
+	reqBody := &wallet.POEBody{
 		Name:     "piaoju001",
 		Owner:    "did:axn:001",
 		Metadata: []byte("this is metadata"),
 	}
-	sign := &structs.SignatureParam{
+	sign := &pki.SignatureParam{
 		Creator:    "did:axn:arxan-provider",
 		Nonce:      "helloalice",
 		PrivateKey: "WBZNmTTf34Kg+pQOTSIRL+JeQYDfj7InWc0A/9kvNvQSI8Ue8iRD8gn9CNmGO2EjJILF/3RELmEcbuS5G0d+Mg==",
 	}
-	payload := &structs.WalletResponse{
+	payload := &wallet.WalletResponse{
 		Id:             poeID,
 		Created:        created,
 		TransactionIds: []string{transID},
@@ -113,12 +115,12 @@ func TestCreatePOEFail(t *testing.T) {
 	)
 
 	//request body & response body
-	reqBody := &structs.POEBody{
+	reqBody := &wallet.POEBody{
 		Name:     "piaoju001",
 		Owner:    "did:axn:001",
 		Metadata: []byte("this is metadata"),
 	}
-	sign := &structs.SignatureParam{
+	sign := &pki.SignatureParam{
 		Creator:    "did:axn:arxan-provider",
 		Nonce:      "helloalice",
 		PrivateKey: "WBZNmTTf34Kg+pQOTSIRL+JeQYDfj7InWc0A/9kvNvQSI8Ue8iRD8gn9CNmGO2EjJILF/3RELmEcbuS5G0d+Mg==",
@@ -164,12 +166,12 @@ func TestCreatePOEFailErrCode(t *testing.T) {
 	)
 
 	//request body & response body
-	reqBody := &structs.POEBody{
+	reqBody := &wallet.POEBody{
 		Name:     "piaoju001",
 		Owner:    "did:axn:001",
 		Metadata: []byte("this is metadata"),
 	}
-	sign := &structs.SignatureParam{
+	sign := &pki.SignatureParam{
 		Creator:    "did:axn:arxan-provider",
 		Nonce:      "helloalice",
 		PrivateKey: "WBZNmTTf34Kg+pQOTSIRL+JeQYDfj7InWc0A/9kvNvQSI8Ue8iRD8gn9CNmGO2EjJILF/3RELmEcbuS5G0d+Mg==",
@@ -222,18 +224,18 @@ func TestUpdatePOESucc(t *testing.T) {
 	)
 
 	//request body & response body
-	reqBody := &structs.POEBody{
+	reqBody := &wallet.POEBody{
 		Id:       "did:axn:poe-id-001",
 		Name:     "piaoju001",
 		Owner:    "did:axn:001",
 		Metadata: []byte("this is metadata"),
 	}
-	sign := &structs.SignatureParam{
+	sign := &pki.SignatureParam{
 		Creator:    "did:axn:arxan-provider",
 		Nonce:      "helloalice",
 		PrivateKey: "WBZNmTTf34Kg+pQOTSIRL+JeQYDfj7InWc0A/9kvNvQSI8Ue8iRD8gn9CNmGO2EjJILF/3RELmEcbuS5G0d+Mg==",
 	}
-	payload := &structs.WalletResponse{
+	payload := &wallet.WalletResponse{
 		TransactionIds: []string{transID},
 	}
 	byPayload, err := json.Marshal(payload)
@@ -284,13 +286,13 @@ func TestUpdatePOEFail(t *testing.T) {
 	)
 
 	//request body & response body
-	reqBody := &structs.POEBody{
+	reqBody := &wallet.POEBody{
 		Id:       "did:axn:poe-id-001",
 		Name:     "piaoju001",
 		Owner:    "did:axn:001",
 		Metadata: []byte("this is metadata"),
 	}
-	sign := &structs.SignatureParam{
+	sign := &pki.SignatureParam{
 		Creator:    "did:axn:arxan-provider",
 		Nonce:      "helloalice",
 		PrivateKey: "WBZNmTTf34Kg+pQOTSIRL+JeQYDfj7InWc0A/9kvNvQSI8Ue8iRD8gn9CNmGO2EjJILF/3RELmEcbuS5G0d+Mg==",
@@ -336,13 +338,13 @@ func TestUpdatePOEFailErrCode(t *testing.T) {
 	)
 
 	//request body & response body
-	reqBody := &structs.POEBody{
+	reqBody := &wallet.POEBody{
 		Id:       "did:axn:poe-id-001",
 		Name:     "piaoju001",
 		Owner:    "did:axn:001",
 		Metadata: []byte("this is metadata"),
 	}
-	sign := &structs.SignatureParam{
+	sign := &pki.SignatureParam{
 		Creator:    "did:axn:arxan-provider",
 		Nonce:      "helloalice",
 		PrivateKey: "WBZNmTTf34Kg+pQOTSIRL+JeQYDfj7InWc0A/9kvNvQSI8Ue8iRD8gn9CNmGO2EjJILF/3RELmEcbuS5G0d+Mg==",
@@ -391,23 +393,23 @@ func TestQueryPOESucc(t *testing.T) {
 
 	const (
 		token    = "user-token-001"
-		id       = structs.Identifier("did:axn:001")
+		id       = did.Identifier("did:axn:001")
 		name     = "MyCar"
-		owner    = structs.Identifier("did:axn:poe-owner-id")
+		owner    = did.Identifier("did:axn:poe-owner-id")
 		metadata = "this is asset metadata"
 		created  = 55555
 		updated  = 66666
 	)
 
 	//build response body
-	payload := &structs.POEPayload{
+	payload := &wallet.POEPayload{
 		Id:       id,
 		Name:     name,
 		Owner:    owner,
 		Metadata: []byte(metadata),
 		Created:  created,
 		Updated:  updated,
-		Status:   structs.DSValid,
+		Status:   did.DSValid,
 	}
 	byPayload, err := json.Marshal(payload)
 	if err != nil {
@@ -455,8 +457,8 @@ func TestQueryPOESucc(t *testing.T) {
 	if result.Updated != updated {
 		t.Fatalf("poe updated time should be %v", updated)
 	}
-	if result.Status != structs.DSValid {
-		t.Fatalf("poe status should be %v", structs.DSValid)
+	if result.Status != did.DSValid {
+		t.Fatalf("poe status should be %v", did.DSValid)
 	}
 }
 
@@ -568,7 +570,7 @@ func TestUploadPOEFileSucc(t *testing.T) {
 	}
 	defer os.Remove(poeFile) // clean up
 
-	payload := &structs.WalletResponse{
+	payload := &wallet.WalletResponse{
 		Id:             poeID,
 		TransactionIds: []string{transID},
 	}

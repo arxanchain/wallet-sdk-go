@@ -22,11 +22,12 @@ import (
 	"github.com/arxanchain/sdk-go-common/crypto/sign/ed25519"
 	"github.com/arxanchain/sdk-go-common/errors"
 	"github.com/arxanchain/sdk-go-common/rest"
-	"github.com/arxanchain/sdk-go-common/structs"
+	"github.com/arxanchain/sdk-go-common/structs/did"
+	"github.com/arxanchain/sdk-go-common/structs/pki"
 	"github.com/arxanchain/sdk-go-common/utils"
 )
 
-func checkSignParams(signParams *structs.SignatureParam) error {
+func checkSignParams(signParams *pki.SignatureParam) error {
 	var err error
 	if signParams == nil {
 		err = fmt.Errorf("request signature params invalid")
@@ -43,7 +44,7 @@ func checkSignParams(signParams *structs.SignatureParam) error {
 	return nil
 }
 
-func buildSignature(signParams *structs.SignatureParam, data []byte) (*structs.Signature, error) {
+func buildSignature(signParams *pki.SignatureParam, data []byte) (*pki.Signature, error) {
 	var err error
 	err = checkSignParams(signParams)
 	if err != nil {
@@ -59,12 +60,12 @@ func buildSignature(signParams *structs.SignatureParam, data []byte) (*structs.S
 		PrivateKeyData: []byte(privateKey),
 	}
 
-	sh := &structs.SignatureHeader{
-		Creator: structs.Identifier(signParams.Creator),
+	sh := &pki.SignatureHeader{
+		Creator: did.Identifier(signParams.Creator),
 		Nonce:   []byte(signParams.Nonce),
 	}
 
-	sd := &structs.SignedData{
+	sd := &pki.SignedData{
 		Data:   data,
 		Header: sh,
 	}
@@ -76,14 +77,14 @@ func buildSignature(signParams *structs.SignatureParam, data []byte) (*structs.S
 	return signData, nil
 }
 
-func buildSignatureBody(signParams *structs.SignatureParam, data []byte) (*structs.SignatureBody, error) {
+func buildSignatureBody(signParams *pki.SignatureParam, data []byte) (*pki.SignatureBody, error) {
 	signData, err := buildSignature(signParams, data)
 	if err != nil {
 		return nil, err
 	}
 	signBase64 := utils.EncodeBase64(signData.Sign)
 
-	sign := &structs.SignatureBody{
+	sign := &pki.SignatureBody{
 		Creator:        signParams.Creator,
 		Created:        signParams.Created,
 		Nonce:          signParams.Nonce,
@@ -94,13 +95,13 @@ func buildSignatureBody(signParams *structs.SignatureParam, data []byte) (*struc
 }
 
 // without base64 encode
-func buildSignatureBodyBase(signParams *structs.SignatureParam, data []byte) (*structs.SignatureBody, error) {
+func buildSignatureBodyBase(signParams *pki.SignatureParam, data []byte) (*pki.SignatureBody, error) {
 	signData, err := buildSignature(signParams, data)
 	if err != nil {
 		return nil, err
 	}
 
-	sign := &structs.SignatureBody{
+	sign := &pki.SignatureBody{
 		Creator:        signParams.Creator,
 		Created:        signParams.Created,
 		Nonce:          signParams.Nonce,
