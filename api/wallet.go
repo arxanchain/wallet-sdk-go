@@ -26,7 +26,8 @@ import (
 	"github.com/arxanchain/sdk-go-common/rest"
 	restapi "github.com/arxanchain/sdk-go-common/rest/api"
 	rtstructs "github.com/arxanchain/sdk-go-common/rest/structs"
-	"github.com/arxanchain/sdk-go-common/structs"
+	"github.com/arxanchain/sdk-go-common/structs/did"
+	"github.com/arxanchain/sdk-go-common/structs/wallet"
 )
 
 // WalletClient is a http agent to wallet service.
@@ -61,7 +62,7 @@ func NewWalletClient(config *restapi.Config) (*WalletClient, error) {
 // 'BC-Invoke-Mode' header to 'sync' value. In synchronous mode,
 // it will not return until the blockchain transaction is confirmed.
 //
-func (w *WalletClient) Register(header http.Header, body *structs.RegisterWalletBody) (result *structs.WalletResponse, err error) {
+func (w *WalletClient) Register(header http.Header, body *wallet.RegisterWalletBody) (result *wallet.WalletResponse, err error) {
 	if body == nil {
 		err = fmt.Errorf("request payload invalid")
 		return
@@ -110,7 +111,7 @@ func (w *WalletClient) Register(header http.Header, body *structs.RegisterWallet
 // 'BC-Invoke-Mode' header to 'sync' value. In synchronous mode,
 // it will not return until the blockchain transaction is confirmed.
 //
-func (w *WalletClient) RegisterSubWallet(header http.Header, body *structs.RegisterSubWalletBody) (result *structs.WalletResponse, err error) {
+func (w *WalletClient) RegisterSubWallet(header http.Header, body *wallet.RegisterSubWalletBody) (result *wallet.WalletResponse, err error) {
 	if body == nil {
 		err = fmt.Errorf("request payload invalid")
 		return
@@ -152,7 +153,7 @@ func (w *WalletClient) RegisterSubWallet(header http.Header, body *structs.Regis
 
 // GetWalletBalance is used to get wallet balances.
 //
-func (w *WalletClient) GetWalletBalance(header http.Header, id structs.Identifier) (result *structs.WalletBalance, err error) {
+func (w *WalletClient) GetWalletBalance(header http.Header, id did.Identifier) (result *wallet.WalletBalance, err error) {
 	r := w.c.NewRequest("GET", "/v1/wallet/balance")
 	r.SetHeaders(header)
 	r.SetParam("id", string(id))
@@ -187,7 +188,7 @@ func (w *WalletClient) GetWalletBalance(header http.Header, id structs.Identifie
 
 // GetWalletInfo is used to get wallet base information.
 //
-func (w *WalletClient) GetWalletInfo(header http.Header, id structs.Identifier) (result *structs.WalletInfo, err error) {
+func (w *WalletClient) GetWalletInfo(header http.Header, id did.Identifier) (result *wallet.WalletInfo, err error) {
 	r := w.c.NewRequest("GET", "/v1/wallet/info")
 	r.SetHeaders(header)
 	r.SetParam("id", string(id))

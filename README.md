@@ -236,54 +236,6 @@ if balance.DigitalAssets != nil {
 }
 ```
 
-## How to do ed25519 signing?
-
-For the APIs that USES the ED25519 signature, we usually provide two forms:
-*APIName* and *APIName*Sign.
-
-The APIs with the `Sign` suffix accept user ED25519 private key, and do the ED25519
-signing inside SDK.
-
-The APIs without the `Sign` suffix directly accept the signed value that the user
-has already done. This section will walk you through how to do ED25519 signing by yourself.
-
-```code
-privateKey, err := utils.DecodeBase64(base64PrivateKey)
-if err != nil {
-	fmt.Printf("DecodeBase64 private key fail: %v\n", err)
-	return
-}
-
-pri := &ed25519.PrivateKey{
-	PrivateKeyData: []byte(privateKey),
-}
-
-sh := &structs.SignatureHeader{
-	Creator: structs.Identifier(walletID),
-	Nonce:   []byte("nonce"),
-}
-
-sd := &structs.SignedData{
-	Data:   data,
-	Header: sh,
-}
-signData, err := sd.DoSign(pri)
-if err != nil {
-	fmt.Printf("DoSign fail: %v\n", err)
-	return
-}
-signBase64 := utils.EncodeBase64(signData.Sign)
-
-signBody := &structs.SignatureBody{
-	Creator:        walletID,
-	Created:        created,
-	Nonce:          "nonce",
-	SignatureValue: signBase64,
-}
-```
-
-Before doing ED25519 signing, you should import [ed25519](github.com/arxanchain/sdk-go-common/crypto/sign/ed25519) package.
-
 ## Using callback URL to receive blockchain transaction events
 
 Each of the APIs for invoking blockchain has two invoking modes, one is `sync`

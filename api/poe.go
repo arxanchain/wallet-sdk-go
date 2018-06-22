@@ -33,7 +33,9 @@ import (
 	"github.com/arxanchain/sdk-go-common/rest"
 	restapi "github.com/arxanchain/sdk-go-common/rest/api"
 	rtstructs "github.com/arxanchain/sdk-go-common/rest/structs"
-	"github.com/arxanchain/sdk-go-common/structs"
+	"github.com/arxanchain/sdk-go-common/structs/did"
+	"github.com/arxanchain/sdk-go-common/structs/pki"
+	"github.com/arxanchain/sdk-go-common/structs/wallet"
 )
 
 // CreatePOE is used to create POE digital asset.
@@ -45,7 +47,7 @@ import (
 // 'BC-Invoke-Mode' header to 'sync' value. In synchronous mode,
 // it will not return until the blockchain transaction is confirmed.
 //
-func (w *WalletClient) CreatePOE(header http.Header, body *structs.POEBody, signParams *structs.SignatureParam) (result *structs.WalletResponse, err error) {
+func (w *WalletClient) CreatePOE(header http.Header, body *wallet.POEBody, signParams *pki.SignatureParam) (result *wallet.WalletResponse, err error) {
 	if body == nil {
 		err = fmt.Errorf("request payload invalid")
 		return
@@ -66,7 +68,7 @@ func (w *WalletClient) CreatePOE(header http.Header, body *structs.POEBody, sign
 	r.SetHeaders(header)
 
 	// Build request body
-	reqBody := &structs.WalletRequest{
+	reqBody := &wallet.WalletRequest{
 		Payload:   string(reqPayload),
 		Signature: sign,
 	}
@@ -110,7 +112,7 @@ func (w *WalletClient) CreatePOE(header http.Header, body *structs.POEBody, sign
 // 'BC-Invoke-Mode' header to 'sync' value. In synchronous mode,
 // it will not return until the blockchain transaction is confirmed.
 //
-func (w *WalletClient) UpdatePOE(header http.Header, body *structs.POEBody, signParams *structs.SignatureParam) (result *structs.WalletResponse, err error) {
+func (w *WalletClient) UpdatePOE(header http.Header, body *wallet.POEBody, signParams *pki.SignatureParam) (result *wallet.WalletResponse, err error) {
 	if body == nil {
 		err = fmt.Errorf("request payload invalid")
 		return
@@ -131,7 +133,7 @@ func (w *WalletClient) UpdatePOE(header http.Header, body *structs.POEBody, sign
 	r.SetHeaders(header)
 
 	// Build request body
-	reqBody := &structs.WalletRequest{
+	reqBody := &wallet.WalletRequest{
 		Payload:   string(reqPayload),
 		Signature: sign,
 	}
@@ -168,7 +170,7 @@ func (w *WalletClient) UpdatePOE(header http.Header, body *structs.POEBody, sign
 
 // QueryPOE is used to query POE digital asset.
 //
-func (w *WalletClient) QueryPOE(header http.Header, id structs.Identifier) (result *structs.POEPayload, err error) {
+func (w *WalletClient) QueryPOE(header http.Header, id did.Identifier) (result *wallet.POEPayload, err error) {
 	r := w.c.NewRequest("GET", "/v1/poe")
 	r.SetHeaders(header)
 	r.SetParam("id", string(id))
@@ -207,7 +209,7 @@ func (w *WalletClient) QueryPOE(header http.Header, id structs.Identifier) (resu
 //
 // poeFile parameter is the path to file to be uploaded.
 //
-func (w *WalletClient) UploadPOEFile(header http.Header, poeID string, poeFile string, readOnly bool) (result *structs.WalletResponse, err error) {
+func (w *WalletClient) UploadPOEFile(header http.Header, poeID string, poeFile string, readOnly bool) (result *wallet.WalletResponse, err error) {
 	log.Println("Call UploadPOEFile...")
 
 	if poeID == "" {
@@ -223,25 +225,25 @@ func (w *WalletClient) UploadPOEFile(header http.Header, poeID string, poeFile s
 	writer := multipart.NewWriter(buf)
 
 	// Create poeID form field
-	err = writer.WriteField(structs.OffchainPOEID, poeID)
+	err = writer.WriteField(wallet.OffchainPOEID, poeID)
 	if err != nil {
-		log.Printf("Write %s field to form fail: %v", structs.OffchainPOEID, err)
+		log.Printf("Write %s field to form fail: %v", wallet.OffchainPOEID, err)
 		return
 	}
 
-	log.Printf("Write %s field to form succ", structs.OffchainPOEID)
+	log.Printf("Write %s field to form succ", wallet.OffchainPOEID)
 
 	// Create readOnly form field
-	err = writer.WriteField(structs.OffchainReadOnly, strconv.FormatBool(readOnly))
+	err = writer.WriteField(wallet.OffchainReadOnly, strconv.FormatBool(readOnly))
 	if err != nil {
-		log.Printf("Write %s field to form fail: %v", structs.OffchainReadOnly, err)
+		log.Printf("Write %s field to form fail: %v", wallet.OffchainReadOnly, err)
 		return
 	}
 
-	log.Printf("Write %s field to form succ", structs.OffchainReadOnly)
+	log.Printf("Write %s field to form succ", wallet.OffchainReadOnly)
 
 	// Create poeFile form field
-	formFile, err := writer.CreateFormFile(structs.OffchainPOEFile, poeFile)
+	formFile, err := writer.CreateFormFile(wallet.OffchainPOEFile, poeFile)
 	if err != nil {
 		log.Printf("Create form file handler for %s fail: %v", poeFile, err)
 		return

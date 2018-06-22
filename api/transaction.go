@@ -23,11 +23,13 @@ import (
 	"reflect"
 
 	"github.com/arxanchain/sdk-go-common/errors"
-	"github.com/arxanchain/sdk-go-common/protos/wallet"
+	pw "github.com/arxanchain/sdk-go-common/protos/wallet"
 	"github.com/arxanchain/sdk-go-common/rest"
 	restapi "github.com/arxanchain/sdk-go-common/rest/api"
 	rtstructs "github.com/arxanchain/sdk-go-common/rest/structs"
-	"github.com/arxanchain/sdk-go-common/structs"
+	"github.com/arxanchain/sdk-go-common/structs/did"
+	"github.com/arxanchain/sdk-go-common/structs/pki"
+	"github.com/arxanchain/sdk-go-common/structs/wallet"
 )
 
 // IssueCToken is used to issue colored token.
@@ -39,7 +41,7 @@ import (
 // 'BC-Invoke-Mode' header to 'sync' value. In synchronous mode,
 // it will not return until the blockchain transaction is confirmed.
 //
-func (w *WalletClient) IssueCToken(header http.Header, body *structs.IssueBody, signParams *structs.SignatureParam) (result *structs.WalletResponse, err error) {
+func (w *WalletClient) IssueCToken(header http.Header, body *wallet.IssueBody, signParams *pki.SignatureParam) (result *wallet.WalletResponse, err error) {
 	if body == nil {
 		err = fmt.Errorf("request payload invalid")
 		return
@@ -48,7 +50,6 @@ func (w *WalletClient) IssueCToken(header http.Header, body *structs.IssueBody, 
 	// 1 send transfer proposal to get wallet.Tx
 	issuePreRsp, err := w.SendIssueCTokenProposal(header, body, signParams)
 	if err != nil {
-		err = fmt.Errorf("send IssueCToken Proposal error: %v", err)
 		return nil, err
 	}
 	txs := issuePreRsp.Txs
@@ -63,7 +64,6 @@ func (w *WalletClient) IssueCToken(header http.Header, body *structs.IssueBody, 
 	// 3 call ProcessTx to transfer formally
 	result, err = w.ProcessTx(header, txs)
 	if err != nil {
-		err = fmt.Errorf("processTx error: %v", err)
 		return nil, err
 	}
 	result.TokenId = issuePreRsp.TokenId
@@ -79,7 +79,7 @@ func (w *WalletClient) IssueCToken(header http.Header, body *structs.IssueBody, 
 // 'BC-Invoke-Mode' header to 'sync' value. In synchronous mode,
 // it will not return until the blockchain transaction is confirmed.
 //
-func (w *WalletClient) SendIssueCTokenProposal(header http.Header, body *structs.IssueBody, signParams *structs.SignatureParam) (issueRsp *structs.IssueCTokenPrepareResponse, err error) {
+func (w *WalletClient) SendIssueCTokenProposal(header http.Header, body *wallet.IssueBody, signParams *pki.SignatureParam) (issueRsp *wallet.IssueCTokenPrepareResponse, err error) {
 	if body == nil {
 		err = fmt.Errorf("request payload invalid")
 		return nil, err
@@ -100,7 +100,7 @@ func (w *WalletClient) SendIssueCTokenProposal(header http.Header, body *structs
 	}
 
 	// Build request body
-	reqBody := &structs.WalletRequest{
+	reqBody := &wallet.WalletRequest{
 		Payload:   string(reqPayload),
 		Signature: sign,
 	}
@@ -130,7 +130,7 @@ func (w *WalletClient) SendIssueCTokenProposal(header http.Header, body *structs
 		return nil, err
 	}
 
-	issueRsp = &structs.IssueCTokenPrepareResponse{}
+	issueRsp = &wallet.IssueCTokenPrepareResponse{}
 	if err = json.Unmarshal([]byte(respPayload), issueRsp); err != nil {
 		return nil, err
 	}
@@ -146,7 +146,7 @@ func (w *WalletClient) SendIssueCTokenProposal(header http.Header, body *structs
 // 'BC-Invoke-Mode' header to 'sync' value. In synchronous mode,
 // it will not return until the blockchain transaction is confirmed.
 //
-func (w *WalletClient) IssueAsset(header http.Header, body *structs.IssueAssetBody, signParams *structs.SignatureParam) (result *structs.WalletResponse, err error) {
+func (w *WalletClient) IssueAsset(header http.Header, body *wallet.IssueAssetBody, signParams *pki.SignatureParam) (result *wallet.WalletResponse, err error) {
 	if body == nil {
 		err = fmt.Errorf("request payload invalid")
 		return
@@ -155,7 +155,6 @@ func (w *WalletClient) IssueAsset(header http.Header, body *structs.IssueAssetBo
 	// 1 send proposal to get wallet.Tx
 	txs, err := w.SendIssueAssetProposal(header, body, signParams)
 	if err != nil {
-		err = fmt.Errorf("send IssueAsset Proposal error: %v", err)
 		return nil, err
 	}
 
@@ -179,7 +178,7 @@ func (w *WalletClient) IssueAsset(header http.Header, body *structs.IssueAssetBo
 // 'BC-Invoke-Mode' header to 'sync' value. In synchronous mode,
 // it will not return until the blockchain transaction is confirmed.
 //
-func (w *WalletClient) TransferCToken(header http.Header, body *structs.TransferCTokenBody, signParams *structs.SignatureParam) (result *structs.WalletResponse, err error) {
+func (w *WalletClient) TransferCToken(header http.Header, body *wallet.TransferCTokenBody, signParams *pki.SignatureParam) (result *wallet.WalletResponse, err error) {
 	if body == nil {
 		err = fmt.Errorf("request payload invalid")
 		return
@@ -188,7 +187,6 @@ func (w *WalletClient) TransferCToken(header http.Header, body *structs.Transfer
 	// 1 send transfer proposal to get wallet.Tx
 	txs, err := w.SendTransferCTokenProposal(header, body, signParams)
 	if err != nil {
-		err = fmt.Errorf("send TransferCToken Proposal error: %v", err)
 		return nil, err
 	}
 
@@ -212,7 +210,7 @@ func (w *WalletClient) TransferCToken(header http.Header, body *structs.Transfer
 // 'BC-Invoke-Mode' header to 'sync' value. In synchronous mode,
 // it will not return until the blockchain transaction is confirmed.
 //
-func (w *WalletClient) TransferAsset(header http.Header, body *structs.TransferAssetBody, signParams *structs.SignatureParam) (result *structs.WalletResponse, err error) {
+func (w *WalletClient) TransferAsset(header http.Header, body *wallet.TransferAssetBody, signParams *pki.SignatureParam) (result *wallet.WalletResponse, err error) {
 	if body == nil {
 		err = fmt.Errorf("request payload invalid")
 		return
@@ -221,7 +219,6 @@ func (w *WalletClient) TransferAsset(header http.Header, body *structs.TransferA
 	// 1 send transfer proposal to get wallet.Tx
 	txs, err := w.SendTransferAssetProposal(header, body, signParams)
 	if err != nil {
-		err = fmt.Errorf("send TransferAsset Proposal error: %v", err)
 		return nil, err
 	}
 
@@ -245,7 +242,7 @@ func (w *WalletClient) TransferAsset(header http.Header, body *structs.TransferA
 // 'BC-Invoke-Mode' header to 'sync' value. In synchronous mode,
 // it will not return until the blockchain transaction is confirmed.
 //
-func (w *WalletClient) SendIssueAssetProposal(header http.Header, body *structs.IssueAssetBody, signParams *structs.SignatureParam) (result []*wallet.TX, err error) {
+func (w *WalletClient) SendIssueAssetProposal(header http.Header, body *wallet.IssueAssetBody, signParams *pki.SignatureParam) (result []*pw.TX, err error) {
 	if body == nil {
 		err = fmt.Errorf("request payload invalid")
 		return nil, err
@@ -266,7 +263,7 @@ func (w *WalletClient) SendIssueAssetProposal(header http.Header, body *structs.
 	}
 
 	// Build request body
-	reqBody := &structs.WalletRequest{
+	reqBody := &wallet.WalletRequest{
 		Payload:   string(reqPayload),
 		Signature: sign,
 	}
@@ -311,7 +308,7 @@ func (w *WalletClient) SendIssueAssetProposal(header http.Header, body *structs.
 // 'BC-Invoke-Mode' header to 'sync' value. In synchronous mode,
 // it will not return until the blockchain transaction is confirmed.
 //
-func (w *WalletClient) SendTransferCTokenProposal(header http.Header, body *structs.TransferCTokenBody, signParams *structs.SignatureParam) (result []*wallet.TX, err error) {
+func (w *WalletClient) SendTransferCTokenProposal(header http.Header, body *wallet.TransferCTokenBody, signParams *pki.SignatureParam) (result []*pw.TX, err error) {
 	if body == nil {
 		err = fmt.Errorf("request payload invalid")
 		return nil, err
@@ -332,7 +329,7 @@ func (w *WalletClient) SendTransferCTokenProposal(header http.Header, body *stru
 	}
 
 	// Build request body
-	reqBody := &structs.WalletRequest{
+	reqBody := &wallet.WalletRequest{
 		Payload:   string(reqPayload),
 		Signature: sign,
 	}
@@ -377,7 +374,7 @@ func (w *WalletClient) SendTransferCTokenProposal(header http.Header, body *stru
 // 'BC-Invoke-Mode' header to 'sync' value. In synchronous mode,
 // it will not return until the blockchain transaction is confirmed.
 //
-func (w *WalletClient) SendTransferAssetProposal(header http.Header, body *structs.TransferAssetBody, signParams *structs.SignatureParam) (result []*wallet.TX, err error) {
+func (w *WalletClient) SendTransferAssetProposal(header http.Header, body *wallet.TransferAssetBody, signParams *pki.SignatureParam) (result []*pw.TX, err error) {
 	if body == nil {
 		err = fmt.Errorf("request payload invalid")
 		return nil, err
@@ -398,7 +395,7 @@ func (w *WalletClient) SendTransferAssetProposal(header http.Header, body *struc
 	}
 
 	// Build request body
-	reqBody := &structs.WalletRequest{
+	reqBody := &wallet.WalletRequest{
 		Payload:   string(reqPayload),
 		Signature: sign,
 	}
@@ -434,7 +431,7 @@ func (w *WalletClient) SendTransferAssetProposal(header http.Header, body *struc
 	return result, err
 }
 
-func (w *WalletClient) signTxs(founder string, txs []*wallet.TX, signParams *structs.SignatureParam) (err error) {
+func (w *WalletClient) signTxs(founder string, txs []*pw.TX, signParams *pki.SignatureParam) (err error) {
 	for _, tx := range txs {
 		if tx.Founder != founder {
 			// sign fee by platform private key
@@ -451,16 +448,16 @@ func (w *WalletClient) signTxs(founder string, txs []*wallet.TX, signParams *str
 	return nil
 }
 
-func (w *WalletClient) signTx(tx *wallet.TX, signParams *structs.SignatureParam) (err error) {
+func (w *WalletClient) signTx(tx *pw.TX, signParams *pki.SignatureParam) (err error) {
 	for _, txout := range tx.Txout {
 		if txout.Script == nil {
 			err = fmt.Errorf("script is nil, no need to sign")
 			return err
 		}
-		utxoSignature := &wallet.UTXOSignature{}
+		utxoSignature := &pw.UTXOSignature{}
 		err = json.Unmarshal(txout.Script, utxoSignature)
 		if err != nil {
-			err = fmt.Errorf(":Unmarshal script error: %v", err)
+			err = fmt.Errorf("Unmarshal script error: %v", err)
 			return err
 		}
 		if utxoSignature.PublicKey == nil {
@@ -484,7 +481,7 @@ func (w *WalletClient) signTx(tx *wallet.TX, signParams *structs.SignatureParam)
 }
 
 // ProcessTx is used to transfer formally with signature TX
-func (w *WalletClient) ProcessTx(header http.Header, txs []*wallet.TX) (result *structs.WalletResponse, err error) {
+func (w *WalletClient) ProcessTx(header http.Header, txs []*pw.TX) (result *wallet.WalletResponse, err error) {
 
 	if txs == nil {
 		err = fmt.Errorf("request payload invalid")
@@ -496,7 +493,7 @@ func (w *WalletClient) ProcessTx(header http.Header, txs []*wallet.TX) (result *
 	r.SetHeaders(header)
 
 	// Build request payload
-	txBody := &structs.ProcessTxBody{
+	txBody := &wallet.ProcessTxBody{
 		Txs: txs,
 	}
 	r.SetBody(txBody)
@@ -537,7 +534,7 @@ func (w *WalletClient) ProcessTx(header http.Header, txs []*wallet.TX) (result *
 // in: query income type transaction
 // out: query spending type transaction
 //
-func (w *WalletClient) QueryTransactionLogs(header http.Header, id structs.Identifier, txType string) (result structs.TransactionLogs, err error) {
+func (w *WalletClient) QueryTransactionLogs(header http.Header, id did.Identifier, txType string) (result wallet.TransactionLogs, err error) {
 	if id == "" {
 		err = fmt.Errorf("request id invalid")
 		return
