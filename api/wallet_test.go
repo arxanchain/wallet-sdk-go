@@ -45,6 +45,16 @@ func initWalletClient(t *testing.T) {
 	}
 }
 
+func initWalletClientWithTrustKeypair(t *testing.T) {
+	client := &http.Client{Transport: &http.Transport{}}
+	gock.InterceptClient(client)
+	var err error
+	walletClient, err = NewWalletClient(&api.Config{Address: "http://127.0.0.1:8006", HttpClient: client, TrusteeKeyPairEnable: true})
+	if err != nil {
+		t.Fatalf("New walletc client fail: %v", err)
+	}
+}
+
 func TestRegisterSucc(t *testing.T) {
 	//init gock & walletclient
 	initWalletClient(t)
