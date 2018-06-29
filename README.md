@@ -32,8 +32,8 @@ To invoke the SDK API, you first need to create a wallet client as follows:
 ```code
 // Create wallet client
 config := &restapi.Config{
-	Address:    "http://172.16.13.6:9143",
-	ApiKey:     "pWEzB4yMM1518346407",
+	Address:    "http://API-Gateway-IP:Port",
+	ApiKey:     "Your-API-Access-Key",
 	CryptoCfg: &restapi.CryptoConfig{
 		Enable:         true,
 		CertsStorePath: "/path/to/client/certs",

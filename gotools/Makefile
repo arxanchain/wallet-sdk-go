@@ -24,6 +24,7 @@ go.fqp.misspell   := github.com/client9/misspell/cmd/misspell
 
 # project dependencies
 go.dep.sdk-go-common := github.com/arxanchain/sdk-go-common/...
+go.dep.safebox-sdk-go := github.com/arxanchain/safebox-sdk-go/...
 go.dep.gockv1    := gopkg.in/h2non/gock.v1
 
 all: $(GOTOOLS_BIN) dep
@@ -42,6 +43,7 @@ dep:
 	@echo "Downloading dependencies"
 	go get ${go.dep.gockv1}
 	go get -u ${go.dep.sdk-go-common}
+	go get -u ${go.dep.safebox-sdk-go}
 
 .PHONY: clean
 clean:
