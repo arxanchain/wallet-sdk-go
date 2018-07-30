@@ -23,6 +23,7 @@ import (
 	"strings"
 	"testing"
 
+	pw "github.com/arxanchain/sdk-go-common/protos/wallet"
 	"github.com/arxanchain/sdk-go-common/rest"
 	"github.com/arxanchain/sdk-go-common/rest/api"
 	rtstructs "github.com/arxanchain/sdk-go-common/rest/structs"
@@ -71,7 +72,7 @@ func TestRegisterSucc(t *testing.T) {
 
 	//request body & response body
 	reqBody := &wallet.RegisterWalletBody{
-		Type:   "Organization",
+		Type:   pw.DidType_ORGANIZATION,
 		Access: "alice",
 		Secret: "123456",
 	}
@@ -145,7 +146,7 @@ func TestRegisterFail(t *testing.T) {
 
 	//request body & response body
 	reqBody := &wallet.RegisterWalletBody{
-		Type:   "Organization",
+		Type:   pw.DidType_ORGANIZATION,
 		Access: "alice",
 		Secret: "123456",
 	}
@@ -191,7 +192,7 @@ func TestRegisterFailErrCode(t *testing.T) {
 
 	//request body & response body
 	reqBody := &wallet.RegisterWalletBody{
-		Type:   "Organization",
+		Type:   pw.DidType_ORGANIZATION,
 		Access: "alice",
 		Secret: "123456",
 	}
@@ -249,7 +250,7 @@ func TestRegisterSubWalletSucc(t *testing.T) {
 	//request body & response body
 	reqBody := &wallet.RegisterSubWalletBody{
 		Id:   "did:axn:001",
-		Type: "cash",
+		Type: pw.DidType_SWCASH,
 	}
 	payload := &wallet.WalletResponse{
 		Id:       id,
@@ -322,7 +323,7 @@ func TestRegisterSubWalletFail(t *testing.T) {
 	//request body & response body
 	reqBody := &wallet.RegisterSubWalletBody{
 		Id:   "did:axn:001",
-		Type: "cash",
+		Type: pw.DidType_SWCASH,
 	}
 	respBody := &rtstructs.Response{
 		ErrCode:    ErrCode,
@@ -367,7 +368,7 @@ func TestRegisterSubWalletFailErrCode(t *testing.T) {
 	//request body & response body
 	reqBody := &wallet.RegisterSubWalletBody{
 		Id:   "did:axn:001",
-		Type: "cash",
+		Type: pw.DidType_SWCASH,
 	}
 	respBody := &rtstructs.Response{
 		ErrCode:    ErrCode,
@@ -588,7 +589,7 @@ func TestGetWalletInfoSucc(t *testing.T) {
 		token      = "user-token-001"
 		id         = did.Identifier("did:axn:001")
 		endpoint   = did.DidEndpoint("endpoint-001")
-		walletType = did.DidType("Organization")
+		walletType = pw.DidType_ORGANIZATION
 	)
 
 	//build response body
@@ -596,7 +597,7 @@ func TestGetWalletInfoSucc(t *testing.T) {
 		Id:       id,
 		Type:     walletType,
 		Endpoint: endpoint,
-		Status:   did.DSValid,
+		Status:   pw.Status_VALID,
 		Created:  55555,
 		Updated:  66666,
 	}
@@ -637,8 +638,8 @@ func TestGetWalletInfoSucc(t *testing.T) {
 	if result.Endpoint != endpoint {
 		t.Fatalf("wallet endpoint should be %v", endpoint)
 	}
-	if result.Status != did.DSValid {
-		t.Fatalf("wallet status should be %v", did.DSValid)
+	if result.Status != pw.Status_VALID {
+		t.Fatalf("wallet status should be %v", pw.Status_VALID)
 	}
 }
 
