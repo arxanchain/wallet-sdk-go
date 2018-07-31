@@ -78,6 +78,10 @@ After creating wallet client, you can use this client to register wallet account
 as follows:
 
 ```code
+import (
+	pw "github.com/arxanchain/sdk-go-common/protos/wallet"
+)
+
 // Build request header
 header := http.Header{}
 // If you use synchronous invoking mode, set following header
@@ -87,7 +91,7 @@ header.Set("Bc-Invoke-Mode", "sync")
 
 // Register wallet account
 registerBody := &structs.RegisterWalletBody{
-	Type:   "Organization",
+	Type:   pw.DidType_ORGANIZATION,
 	Access: "alice0001",
 	Secret: "Alice#123456",
 }
@@ -134,7 +138,7 @@ fmt.Printf("Create POE succ. Response: %+v\n", resp)
 // Upload poe file
 poeID := string(resp.Id)
 poeFile := "./test-upload-file"
-resp, err = walletClient.UploadPOEFile(header, poeID, poeFile)
+resp, err = walletClient.UploadPOEFile(header, poeID, poeFile, false)
 if err != nil {
 	fmt.Printf("UploadPOEFail fail: %v\n", err)
 	return
