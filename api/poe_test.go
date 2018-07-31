@@ -25,6 +25,7 @@ import (
 	"strings"
 	"testing"
 
+	pw "github.com/arxanchain/sdk-go-common/protos/wallet"
 	"github.com/arxanchain/sdk-go-common/rest"
 	rtstructs "github.com/arxanchain/sdk-go-common/rest/structs"
 	"github.com/arxanchain/sdk-go-common/structs/did"
@@ -409,7 +410,7 @@ func TestQueryPOESucc(t *testing.T) {
 		Metadata: []byte(metadata),
 		Created:  created,
 		Updated:  updated,
-		Status:   did.DSValid,
+		Status:   pw.Status_VALID,
 	}
 	byPayload, err := json.Marshal(payload)
 	if err != nil {
@@ -457,8 +458,8 @@ func TestQueryPOESucc(t *testing.T) {
 	if result.Updated != updated {
 		t.Fatalf("poe updated time should be %v", updated)
 	}
-	if result.Status != did.DSValid {
-		t.Fatalf("poe status should be %v", did.DSValid)
+	if result.Status != pw.Status_VALID {
+		t.Fatalf("poe status should be %v", pw.Status_VALID)
 	}
 }
 

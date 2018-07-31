@@ -761,7 +761,7 @@ func TestQueryTransactionLogsSucc(t *testing.T) {
 			Utxo: []*wallet.UTXO{
 				&wallet.UTXO{
 					SourceTxDataHash: "source-tx-data-hash",
-					Ix:               1,
+					Ix:               "1",
 					CTokenId:         "ctokenid-001",
 					CType:            0,
 					Value:            5,
@@ -773,14 +773,14 @@ func TestQueryTransactionLogsSucc(t *testing.T) {
 						Nanos:   0,
 					},
 					Founder: "funder-did-0001",
-					TxType:  0,
+					TxType:  "0",
 					BCTxID:  txID01,
 				},
 			},
 			Stxo: []*wallet.SpentTxOUT{
 				&wallet.SpentTxOUT{
 					SourceTxDataHash: "source-tx-data-hash",
-					Ix:               2,
+					Ix:               "2",
 					CTokenId:         "ctokenid-002",
 					CType:            0,
 					Value:            5,
@@ -797,7 +797,7 @@ func TestQueryTransactionLogsSucc(t *testing.T) {
 						Nanos:   0,
 					},
 					Founder: "funder-did-0002",
-					TxType:  1,
+					TxType:  "1",
 					BCTxID:  txID02,
 				},
 			},
