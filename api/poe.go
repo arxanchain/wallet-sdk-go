@@ -221,7 +221,7 @@ func (w *WalletClient) QueryPOE(header http.Header, id did.Identifier) (result *
 //
 // poeFile parameter is the path to file to be uploaded.
 //
-func (w *WalletClient) UploadPOEFile(header http.Header, poeID string, poeFile string, readOnly bool) (result *wallet.WalletResponse, err error) {
+func (w *WalletClient) UploadPOEFile(header http.Header, poeID string, poeFile string, readOnly bool) (result *wallet.UploadResponse, err error) {
 	log.Println("Call UploadPOEFile...")
 
 	if poeID == "" {
