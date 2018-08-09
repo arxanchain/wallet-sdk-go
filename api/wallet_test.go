@@ -413,28 +413,25 @@ func TestGetWalletBalanceSucc(t *testing.T) {
 	defer gock.Off()
 
 	const (
-		id         = "did:axn:001"
-		token      = "user-token-001"
-		coinID     = "colored-token-001"
-		coinAmount = 5000
-		assetID    = "asset-id-002"
-		assetName  = "stock003"
+		id          = "did:axn:001"
+		token       = "user-token-001"
+		tokenID     = "colored-token-001"
+		tokenAmount = 5000
+		assetID     = "asset-id-002"
 	)
 
 	//build response body
 	payload := &wallet.WalletBalance{
-		ColoredTokens: map[string]*wallet.CTokenBalance{
-			coinID: {
-				Id:     coinID,
-				Amount: coinAmount,
+		ColoredTokens: map[string]*wallet.Balance{
+			tokenID: {
+				Id:     tokenID,
+				Amount: tokenAmount,
 			},
 		},
-		DigitalAssets: map[string]*wallet.AssetBalance{
+		DigitalAssets: map[string]*wallet.Balance{
 			assetID: {
 				Id:     assetID,
 				Amount: 1,
-				Name:   assetName,
-				Status: 1,
 			},
 		},
 	}
@@ -472,19 +469,19 @@ func TestGetWalletBalanceSucc(t *testing.T) {
 	if result.DigitalAssets == nil || len(result.DigitalAssets) == 0 {
 		t.Fatalf("digital assets should not be nil")
 	}
-	coin, ok := result.ColoredTokens[coinID]
-	if !ok || coin == nil {
-		t.Fatalf("colored coin(%v) should exist", coinID)
+	ctoken, ok := result.ColoredTokens[tokenID]
+	if !ok || ctoken == nil {
+		t.Fatalf("colored token(%v) should exist", tokenID)
 	}
-	if coin.Amount != coinAmount {
-		t.Fatalf("colored coin(%v) amount should be %v", coinID, coinAmount)
+	if ctoken.Amount != tokenAmount {
+		t.Fatalf("colored token(%v) amount should be %v", tokenID, tokenAmount)
 	}
 	asset, ok := result.DigitalAssets[assetID]
 	if !ok || asset == nil {
 		t.Fatalf("asset(%v) should exist", assetID)
 	}
-	if asset.Name != assetName {
-		t.Fatalf("asset(%v) name should be %v", assetID, assetName)
+	if asset.Amount != 1 {
+		t.Fatalf("asset(%v) amount should be %v", assetID, 1)
 	}
 }
 
@@ -497,7 +494,7 @@ func TestGetWalletBalanceFail(t *testing.T) {
 		id      = "did:axn:001"
 		token   = "user-token-001"
 		errCode = 8001
-		errMsg  = "get colored coin error"
+		errMsg  = "get colored token error"
 	)
 
 	//build response body
@@ -539,7 +536,7 @@ func TestGetWalletBalanceFailErrCode(t *testing.T) {
 		id      = "did:axn:001"
 		token   = "user-token-001"
 		errCode = 8001
-		errMsg  = "get colored coin error"
+		errMsg  = "get colored token error"
 	)
 
 	//build response body
