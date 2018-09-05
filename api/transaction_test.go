@@ -23,10 +23,10 @@ import (
 	"strings"
 	"testing"
 
+	pw "github.com/arxanchain/sdk-go-common/protos/wallet"
 	"github.com/arxanchain/sdk-go-common/rest"
 	rtstructs "github.com/arxanchain/sdk-go-common/rest/structs"
 	"github.com/arxanchain/sdk-go-common/structs/did"
-	"github.com/arxanchain/sdk-go-common/structs/wallet"
 	gock "gopkg.in/h2non/gock.v1"
 )
 
@@ -756,53 +756,21 @@ func TestQueryTransactionLogsSucc(t *testing.T) {
 	)
 
 	//build response body
-	payload := wallet.TransactionLogs{
-		walletAddr: &wallet.TransactionLog{
-			Utxo: []*wallet.UTXO{
-				&wallet.UTXO{
-					SourceTxDataHash: "source-tx-data-hash",
-					Ix:               "1",
-					CTokenId:         "ctokenid-001",
-					CType:            0,
-					Value:            5,
-					Addr:             "endpoint-who-will-receive-this-txout",
-					Until:            -1,
-					Script:           []byte("payload data be attached to this tx"),
-					CreatedAt: &wallet.Timestamp{
-						Seconds: 5555555,
-						Nanos:   0,
-					},
-					Founder: "funder-did-0001",
-					TxType:  "0",
-					BCTxID:  txID01,
-				},
-			},
-			Stxo: []*wallet.SpentTxOUT{
-				&wallet.SpentTxOUT{
-					SourceTxDataHash: "source-tx-data-hash",
-					Ix:               "2",
-					CTokenId:         "ctokenid-002",
-					CType:            0,
-					Value:            5,
-					Addr:             "endpoint-who-will-receive-this-txout",
-					Until:            -1,
-					Script:           []byte("payload data be attached to this tx"),
-					CreatedAt: &wallet.Timestamp{
-						Seconds: 6666666,
-						Nanos:   0,
-					},
-					SpentTxDataHash: "spent-tx-data-hash",
-					SpentAt: &wallet.Timestamp{
-						Seconds: 6666667,
-						Nanos:   0,
-					},
-					Founder: "funder-did-0002",
-					TxType:  "1",
-					BCTxID:  txID02,
-				},
-			},
+	payload := []*pw.UTXO{
+		&pw.UTXO{
+			SourceTxDataHash: "source-tx-data-hash",
+			Ix:               "1",
+			CTokenId:         "ctokenid-001",
+			CType:            0,
+			Value:            5,
+			Addr:             "endpoint-who-will-receive-this-txout",
+			Until:            -1,
+			Script:           []byte("payload data be attached to this tx"),
+			Founder:          "funder-did-0001",
+			TxType:           pw.TxType(0),
 		},
 	}
+
 	byPayload, err := json.Marshal(payload)
 	if err != nil {
 		t.Fatalf("%v", err)
@@ -823,9 +791,10 @@ func TestQueryTransactionLogsSucc(t *testing.T) {
 	//set header
 	header := http.Header{}
 	header.Set("X-Auth-Token", token)
+	var num, page int32
 
 	//do query wallet balance
-	result, err := walletClient.QueryTransactionLogs(header, id, txType)
+	result, err := walletClient.QueryTransactionLogs(header, id, txType, num, page)
 	if err != nil {
 		t.Fatalf("get wallet info fail: %v", err)
 	}
@@ -834,25 +803,6 @@ func TestQueryTransactionLogsSucc(t *testing.T) {
 	}
 	if len(result) != 1 {
 		t.Fatalf("response logs should contain one wallet account")
-	}
-	transLogs, ok := result[walletAddr]
-	if !ok {
-		t.Fatalf("response logs should contain the specified wallet account's trans logs: %s", walletAddr)
-	}
-	if transLogs == nil {
-		t.Fatalf("transaction logs should not be nil when query succ")
-	}
-	if len(transLogs.Utxo) != 1 {
-		t.Fatalf("utxo logs should contain one record")
-	}
-	if len(transLogs.Stxo) != 1 {
-		t.Fatalf("stxo logs should contain one record")
-	}
-	if transLogs.Utxo[0].BCTxID != txID01 {
-		t.Fatalf("utxo blockchain transaction id should be %s", txID01)
-	}
-	if transLogs.Stxo[0].BCTxID != txID02 {
-		t.Fatalf("stxo blockchain transaction id should be %s", txID02)
 	}
 }
 
@@ -888,7 +838,7 @@ func TestQueryTransactionLogsFail(t *testing.T) {
 	header.Set("X-Auth-Token", token)
 
 	//do query wallet balance
-	result, err := walletClient.QueryTransactionLogs(header, id, txType)
+	result, err := walletClient.QueryTransactionLogs(header, id, txType, 0, 0)
 	if err == nil {
 		t.Fatalf("err should not be nil when query fail")
 	}
@@ -932,7 +882,7 @@ func TestQueryTransactionLogsFailErrCode(t *testing.T) {
 	header.Set("X-Auth-Token", token)
 
 	//do query wallet balance
-	result, err := walletClient.QueryTransactionLogs(header, id, txType)
+	result, err := walletClient.QueryTransactionLogs(header, id, txType, 0, 0)
 	if err == nil {
 		t.Fatalf("err should not be nil when query fail")
 	}
@@ -950,5 +900,325 @@ func TestQueryTransactionLogsFailErrCode(t *testing.T) {
 
 	if result != nil {
 		t.Fatalf("TransactionLogs object should be nil when query fail")
+	}
+}
+
+func TestQueryTransactionUTXOSucc(t *testing.T) {
+	//init gock & edkeyclient
+	initWalletClient(t)
+	defer gock.Off()
+
+	const (
+		token      = "user-token-001"
+		id         = did.Identifier("did:axn:001")
+		walletAddr = "endpoint-001"
+		txID01     = "tx-id-001"
+		txID02     = "tx-id-002"
+	)
+
+	//build response body
+	payload := []*pw.UTXO{
+		&pw.UTXO{
+			SourceTxDataHash: "source-tx-data-hash",
+			Ix:               "1",
+			CTokenId:         "ctokenid-001",
+			CType:            0,
+			Value:            5,
+			Addr:             "endpoint-who-will-receive-this-txout",
+			Until:            -1,
+			Script:           []byte("payload data be attached to this tx"),
+			Founder:          "funder-did-0001",
+			TxType:           pw.TxType(0),
+		},
+	}
+
+	byPayload, err := json.Marshal(payload)
+	if err != nil {
+		t.Fatalf("%v", err)
+	}
+	respBody := &rtstructs.Response{
+		ErrCode: 0,
+		Payload: string(byPayload),
+	}
+
+	//mock http request
+	gock.New("http://127.0.0.1:8006").
+		Get("/v1/transaction/utxo").
+		MatchParam("id", string(id)).
+		MatchParam("num", "0").
+		MatchParam("page", "1").
+		Reply(200).
+		JSON(respBody)
+
+	//set header
+	header := http.Header{}
+	header.Set("X-Auth-Token", token)
+	var num, page int32
+
+	//do query wallet balance
+	result, err := walletClient.QueryTransactionUTXO(header, id, num, page)
+	if err != nil {
+		t.Fatalf("get wallet info fail: %v", err)
+	}
+	if result == nil {
+		t.Fatalf("WalletInfo object should not be nil")
+	}
+	if len(result) != 1 {
+		t.Fatalf("response logs should contain one wallet account")
+	}
+}
+
+func TestQueryTransactionUTXOFail(t *testing.T) {
+	//init gock & edkeyclient
+	initWalletClient(t)
+	defer gock.Off()
+
+	const (
+		token   = "user-token-001"
+		id      = "did:axn:001"
+		errCode = 8000
+		errMsg  = "wallet not found"
+	)
+
+	//build response body
+	respBody := &rtstructs.Response{
+		ErrCode:    errCode,
+		ErrMessage: errMsg,
+	}
+
+	//mock http request
+	gock.New("http://127.0.0.1:8006").
+		Get("/v1/transaction/utxo").
+		MatchParam("id", id).
+		MatchParam("num", "0").
+		MatchParam("page", "1").
+		Reply(errCode).
+		JSON(respBody)
+
+		//set header
+	header := http.Header{}
+	header.Set("X-Auth-Token", token)
+
+	//do query wallet balance
+	result, err := walletClient.QueryTransactionUTXO(header, id, 0, 0)
+	if err == nil {
+		t.Fatalf("err should not be nil when query fail")
+	}
+	if !strings.Contains(err.Error(), errMsg) {
+		t.Fatalf("error message should contains [%v]", errMsg)
+	}
+	if result != nil {
+		t.Fatalf("TransactionUTXO object should be nil when query fail")
+	}
+}
+
+func TestQueryTransactionUTXOFailErrCode(t *testing.T) {
+	//init gock & edkeyclient
+	initWalletClient(t)
+	defer gock.Off()
+
+	const (
+		token   = "user-token-001"
+		id      = "did:axn:001"
+		errCode = 8000
+		errMsg  = "wallet not found"
+	)
+
+	//build response body
+	respBody := &rtstructs.Response{
+		ErrCode:    errCode,
+		ErrMessage: errMsg,
+	}
+
+	//mock http request
+	gock.New("http://127.0.0.1:8006").
+		Get("/v1/transaction/utxo").
+		MatchParam("id", id).
+		Reply(200).
+		JSON(respBody)
+
+	//set header
+	header := http.Header{}
+	header.Set("X-Auth-Token", token)
+
+	//do query wallet balance
+	result, err := walletClient.QueryTransactionUTXO(header, id, 0, 0)
+	if err == nil {
+		t.Fatalf("err should not be nil when query fail")
+	}
+
+	errWitherrCode, ok := err.(rest.HTTPCodedError)
+	if !ok {
+		t.Fatalf("error type should be HTTPCodedError not %v", reflect.TypeOf(err))
+	}
+	if errWitherrCode.Code() != errCode {
+		t.Fatalf("Error code should be %d", errCode)
+	}
+	if errWitherrCode.Error() != errMsg {
+		t.Fatalf("Error message should be %s", errMsg)
+	}
+
+	if result != nil {
+		t.Fatalf("TransactionUTXO object should be nil when query fail")
+	}
+}
+
+func TestQueryTransactionSTXOSucc(t *testing.T) {
+	//init gock & edkeyclient
+	initWalletClient(t)
+	defer gock.Off()
+
+	const (
+		token      = "user-token-001"
+		id         = did.Identifier("did:axn:001")
+		walletAddr = "endpoint-001"
+		txID01     = "tx-id-001"
+		txID02     = "tx-id-002"
+	)
+
+	//build response body
+	payload := []*pw.UTXO{
+		&pw.UTXO{
+			SourceTxDataHash: "source-tx-data-hash",
+			Ix:               "1",
+			CTokenId:         "ctokenid-001",
+			CType:            0,
+			Value:            5,
+			Addr:             "endpoint-who-will-receive-this-txout",
+			Until:            -1,
+			Script:           []byte("payload data be attached to this tx"),
+			Founder:          "funder-did-0001",
+			TxType:           pw.TxType(0),
+		},
+	}
+
+	byPayload, err := json.Marshal(payload)
+	if err != nil {
+		t.Fatalf("%v", err)
+	}
+	respBody := &rtstructs.Response{
+		ErrCode: 0,
+		Payload: string(byPayload),
+	}
+
+	//mock http request
+	gock.New("http://127.0.0.1:8006").
+		Get("/v1/transaction/stxo").
+		MatchParam("id", string(id)).
+		MatchParam("num", "0").
+		MatchParam("page", "1").
+		Reply(200).
+		JSON(respBody)
+
+	//set header
+	header := http.Header{}
+	header.Set("X-Auth-Token", token)
+	var num, page int32
+
+	//do query wallet balance
+	result, err := walletClient.QueryTransactionSTXO(header, id, num, page)
+	if err != nil {
+		t.Fatalf("get wallet info fail: %v", err)
+	}
+	if result == nil {
+		t.Fatalf("WalletInfo object should not be nil")
+	}
+	if len(result) != 1 {
+		t.Fatalf("response logs should contain one wallet account")
+	}
+}
+
+func TestQueryTransactionSTXOFail(t *testing.T) {
+	//init gock & edkeyclient
+	initWalletClient(t)
+	defer gock.Off()
+
+	const (
+		token   = "user-token-001"
+		id      = "did:axn:001"
+		errCode = 8000
+		errMsg  = "wallet not found"
+	)
+
+	//build response body
+	respBody := &rtstructs.Response{
+		ErrCode:    errCode,
+		ErrMessage: errMsg,
+	}
+
+	//mock http request
+	gock.New("http://127.0.0.1:8006").
+		Get("/v1/transaction/stxo").
+		MatchParam("id", id).
+		MatchParam("num", "0").
+		MatchParam("page", "1").
+		Reply(errCode).
+		JSON(respBody)
+
+		//set header
+	header := http.Header{}
+	header.Set("X-Auth-Token", token)
+
+	//do query wallet balance
+	result, err := walletClient.QueryTransactionSTXO(header, id, 0, 0)
+	if err == nil {
+		t.Fatalf("err should not be nil when query fail")
+	}
+	if !strings.Contains(err.Error(), errMsg) {
+		t.Fatalf("error message should contains [%v]", errMsg)
+	}
+	if result != nil {
+		t.Fatalf("TransactionSTXO object should be nil when query fail")
+	}
+}
+
+func TestQueryTransactionSTXOFailErrCode(t *testing.T) {
+	//init gock & edkeyclient
+	initWalletClient(t)
+	defer gock.Off()
+
+	const (
+		token   = "user-token-001"
+		id      = "did:axn:001"
+		errCode = 8000
+		errMsg  = "wallet not found"
+	)
+
+	//build response body
+	respBody := &rtstructs.Response{
+		ErrCode:    errCode,
+		ErrMessage: errMsg,
+	}
+
+	//mock http request
+	gock.New("http://127.0.0.1:8006").
+		Get("/v1/transaction/stxo").
+		MatchParam("id", id).
+		Reply(200).
+		JSON(respBody)
+
+	//set header
+	header := http.Header{}
+	header.Set("X-Auth-Token", token)
+
+	//do query wallet balance
+	result, err := walletClient.QueryTransactionSTXO(header, id, 0, 0)
+	if err == nil {
+		t.Fatalf("err should not be nil when query fail")
+	}
+
+	errWitherrCode, ok := err.(rest.HTTPCodedError)
+	if !ok {
+		t.Fatalf("error type should be HTTPCodedError not %v", reflect.TypeOf(err))
+	}
+	if errWitherrCode.Code() != errCode {
+		t.Fatalf("Error code should be %d", errCode)
+	}
+	if errWitherrCode.Error() != errMsg {
+		t.Fatalf("Error message should be %s", errMsg)
+	}
+
+	if result != nil {
+		t.Fatalf("TransactionSTXO object should be nil when query fail")
 	}
 }

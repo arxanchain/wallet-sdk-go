@@ -240,6 +240,64 @@ if balance.DigitalAssets != nil {
 }
 ```
 
+## Query transaction logs
+You can use the `QueryTransactionLogs` API to get the transaction logs of the
+specified wallet account as follows:
+
+```
+// Query wallet tx logs
+txType := "in" // tx type: transfer in/out, other: all
+var num int32 = 1
+var page int32 = 1
+logs, err = walletClient.QueryTransactionLogs(header, walletID, txType, num, page)
+if err != nil {
+	fmt.Printf("Get wallet(%s) tx logs fail: %v\n", walletID, err)
+	return
+}
+if logs != nil {
+	fmt.Printf("Get wallet(%s) tx logs succ: %+v\n", walletID, logs)
+	}
+}
+```
+
+## Query transaction UTXO logs
+You can use the `QueryTransactionUTXO` API to get the transaction UTXOs of the
+specified wallet account as follows:
+
+```
+// Query wallet UTXO
+var num int32 = 1
+var page int32 = 1
+logs, err = walletClient.QueryTransactionUTXO(header, walletID, num, page)
+if err != nil {
+	fmt.Printf("Get wallet(%s) UTXOs fail: %v\n", walletID, err)
+	return
+}
+if logs != nil {
+	fmt.Printf("Get wallet(%s) UTXOs succ: %+v\n", walletID, logs)
+	}
+}
+```
+
+## Query transaction STXO logs
+You can use the `QueryTransactionSTXO` API to get the transaction STXOs of the
+specified wallet account as follows:
+
+```
+// Query wallet STXO
+var num int32 = 1
+var page int32 = 1
+logs, err = walletClient.QueryTransactionSTXO(header, walletID, num, page)
+if err != nil {
+	fmt.Printf("Get wallet(%s) STXOs fail: %v\n", walletID, err)
+	return
+}
+if logs != nil {
+	fmt.Printf("Get wallet(%s) STXOs succ: %+v\n", walletID, logs)
+	}
+}
+```
+
 ## Using callback URL to receive blockchain transaction events
 
 Each of the APIs for invoking blockchain has two invoking modes, one is `sync`
