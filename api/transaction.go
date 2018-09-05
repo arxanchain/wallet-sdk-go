@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"net/http"
 	"reflect"
+	"strconv"
 
 	"github.com/arxanchain/sdk-go-common/errors"
 	pw "github.com/arxanchain/sdk-go-common/protos/wallet"
@@ -612,18 +613,139 @@ func (w *WalletClient) ProcessTx(header http.Header, txs []*pw.TX) (result *wall
 // txType:
 // in: query income type transaction
 // out: query spending type transaction
+// other: in && out
+// num, page: count and page to be returned
 //
-func (w *WalletClient) QueryTransactionLogs(header http.Header, id did.Identifier, txType string) (result wallet.TransactionLogs, err error) {
+func (w *WalletClient) QueryTransactionLogs(header http.Header, id did.Identifier, txType string, num, page int32) (result []*pw.UTXO, err error) {
+	fmt.Printf("*****in wallet-sdk-go id: %v, txType: %v, num: %v, page: %v\n", id, txType, num, page)
 	if id == "" {
 		err = fmt.Errorf("request id invalid")
 		return
 	}
+	if num < 0 {
+		num = 0
+	}
+	if page <= 0 {
+		page = 1
+	}
 
+	numStr := strconv.Itoa(int(num))
+	pageStr := strconv.Itoa(int(page))
 	// Build http request
 	r := w.c.NewRequest("GET", "/v1/transaction/logs")
 	r.SetHeaders(header)
 	r.SetParam("id", string(id))
 	r.SetParam("type", txType)
+	r.SetParam("num", numStr)
+	r.SetParam("page", pageStr)
+
+	// Do http request
+	_, resp, err := restapi.RequireOK(w.c.DoRequest(r))
+	if err != nil {
+		return
+	}
+	defer resp.Body.Close()
+
+	// Parse http response
+	var respBody rtstructs.Response
+	if err = restapi.DecodeBody(resp, &respBody); err != nil {
+		return
+	}
+
+	if respBody.ErrCode != errors.SuccCode {
+		err = rest.CodedError(respBody.ErrCode, respBody.ErrMessage)
+		return
+	}
+
+	respPayload, ok := respBody.Payload.(string)
+	if !ok {
+		err = fmt.Errorf("response payload type invalid: %v", reflect.TypeOf(respBody.Payload))
+		return
+	}
+
+	err = json.Unmarshal([]byte(respPayload), &result)
+
+	return
+}
+
+// QueryTransactionUTXO is used to query transaction UTXO logs.
+//
+// num, page: count and page to be returned
+//
+func (w *WalletClient) QueryTransactionUTXO(header http.Header, id did.Identifier, num, page int32) (result []*pw.UTXO, err error) {
+	if id == "" {
+		err = fmt.Errorf("request id invalid")
+		return
+	}
+	if num < 0 {
+		num = 0
+	}
+	if page <= 0 {
+		page = 1
+	}
+
+	numStr := strconv.Itoa(int(num))
+	pageStr := strconv.Itoa(int(page))
+	// Build http request
+	r := w.c.NewRequest("GET", "/v1/transaction/utxo")
+	r.SetHeaders(header)
+	r.SetParam("id", string(id))
+	r.SetParam("num", numStr)
+	r.SetParam("page", pageStr)
+
+	// Do http request
+	_, resp, err := restapi.RequireOK(w.c.DoRequest(r))
+	if err != nil {
+		return
+	}
+	defer resp.Body.Close()
+
+	// Parse http response
+	var respBody rtstructs.Response
+	if err = restapi.DecodeBody(resp, &respBody); err != nil {
+		return
+	}
+
+	if respBody.ErrCode != errors.SuccCode {
+		err = rest.CodedError(respBody.ErrCode, respBody.ErrMessage)
+		return
+	}
+
+	respPayload, ok := respBody.Payload.(string)
+	if !ok {
+		err = fmt.Errorf("response payload type invalid: %v", reflect.TypeOf(respBody.Payload))
+		return
+	}
+
+	err = json.Unmarshal([]byte(respPayload), &result)
+
+	return
+}
+
+// QueryTransactionSTXO is used to query transaction UTXO logs.
+//
+// num, page: count and page to be returned
+//
+func (w *WalletClient) QueryTransactionSTXO(header http.Header, id did.Identifier, num, page int32) (result []*pw.UTXO, err error) {
+	if id == "" {
+		err = fmt.Errorf("request id invalid")
+		return
+	}
+	if num < 0 {
+		num = 0
+	}
+	if page <= 0 {
+		page = 1
+	}
+
+	numStr := strconv.Itoa(int(num))
+	pageStr := strconv.Itoa(int(page))
+	// Build http request
+	r := w.c.NewRequest("GET", "/v1/transaction/stxo")
+	r.SetHeaders(header)
+	r.SetParam("id", string(id))
+	r.SetParam("num", numStr)
+	r.SetParam("page", pageStr)
 
 	// Do http request
 	_, resp, err := restapi.RequireOK(w.c.DoRequest(r))
