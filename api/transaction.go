@@ -33,6 +33,9 @@ import (
 	"github.com/arxanchain/sdk-go-common/structs/wallet"
 )
 
+/////////////////////////////////////////////////////////////////////////////////////////////////
+// Issue Colored Token
+
 // IssueCToken is used to issue colored token.
 //
 // The default invoking mode is asynchronous, it will return
@@ -59,14 +62,14 @@ func (w *WalletClient) IssueCToken(header http.Header, body *wallet.IssueBody, s
 	}
 
 	// 1 send transfer proposal to get wallet.Tx
-	issuePreRsp, err := w.SendIssueCTokenProposal(header, body, signParams)
+	issuePreRsp, err := w.SendIssueCTokenProposal(header, body)
 	if err != nil {
 		return nil, err
 	}
 	txs := issuePreRsp.Txs
 
 	// 2 sign public key as signature
-	err = w.signTxs(body.Issuer, txs, signParams)
+	err = w.SignTxs(txs, signParams)
 	if err != nil {
 		err = fmt.Errorf("sign Txs error: %v", err)
 		return nil, err
@@ -93,38 +96,16 @@ func (w *WalletClient) IssueCToken(header http.Header, body *wallet.IssueBody, s
 // The default key pair trust mode does not trust, it will required key pair.
 // If you had trust the key pair, it will required security code.
 //
-func (w *WalletClient) SendIssueCTokenProposal(header http.Header, body *wallet.IssueBody, signParams *pki.SignatureParam) (issueRsp *wallet.IssueCTokenPrepareResponse, err error) {
+func (w *WalletClient) SendIssueCTokenProposal(header http.Header, body *wallet.IssueBody) (issueRsp *wallet.IssueCTokenPrepareResponse, err error) {
 	if body == nil {
 		err = fmt.Errorf("request payload invalid")
 		return nil, err
 	}
 
-	if w.s != nil {
-		signParams, err = w.queryPrivateKey(header, signParams)
-		if err != nil {
-			return
-		}
-	}
 	// Build http request
-	r := w.c.NewRequest("POST", "/v1/transaction/tokens/issue/prepare")
+	r := w.c.NewRequest("POST", "/v2/transaction/tokens/issue/prepare")
 	r.SetHeaders(header)
-
-	// Build request payload
-	reqPayload, err := json.Marshal(body)
-	if err != nil {
-		return nil, err
-	}
-	sign, err := buildSignatureBody(signParams, reqPayload)
-	if err != nil {
-		return nil, err
-	}
-
-	// Build request body
-	reqBody := &wallet.WalletRequest{
-		Payload:   string(reqPayload),
-		Signature: sign,
-	}
-	r.SetBody(reqBody)
+	r.SetBody(body)
 
 	// Do http request
 	_, resp, err := restapi.RequireOK(w.c.DoRequest(r))
@@ -157,6 +138,9 @@ func (w *WalletClient) SendIssueCTokenProposal(header http.Header, body *wallet.
 	return issueRsp, nil
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////////////
+// Issue Asset
+
 // IssueAsset is used to issue digital asset.
 //
 // The default invoking mode is asynchronous, it will return
@@ -183,13 +167,13 @@ func (w *WalletClient) IssueAsset(header http.Header, body *wallet.IssueAssetBod
 	}
 
 	// 1 send proposal to get wallet.Tx
-	txs, err := w.SendIssueAssetProposal(header, body, signParams)
+	txs, err := w.SendIssueAssetProposal(header, body)
 	if err != nil {
 		return nil, err
 	}
 
 	// 2 sign public key as signature
-	err = w.signTxs(body.Issuer, txs, signParams)
+	err = w.SignTxs(txs, signParams)
 	if err != nil {
 		err = fmt.Errorf("sign Txs error: %v", err)
 		return nil, err
@@ -198,6 +182,62 @@ func (w *WalletClient) IssueAsset(header http.Header, body *wallet.IssueAssetBod
 	// 3 call ProcessTx to transfer formally
 	return w.ProcessTx(header, txs)
 }
+
+// SendIssueAssetProposal is used to send issue asset proposal to get wallet.Tx to be signed.
+//
+// The default invoking mode is asynchronous, it will return
+// without waiting for blockchain transaction confirmation.
+//
+// If you want to switch to synchronous invoking mode, set
+// 'BC-Invoke-Mode' header to 'sync' value. In synchronous mode,
+// it will not return until the blockchain transaction is confirmed.
+//
+// The default key pair trust mode does not trust, it will required key pair.
+// If you had trust the key pair, it will required security code.
+//
+func (w *WalletClient) SendIssueAssetProposal(header http.Header, body *wallet.IssueAssetBody) (result []*pw.TX, err error) {
+	if body == nil {
+		err = fmt.Errorf("request payload invalid")
+		return nil, err
+	}
+
+	// Build http request
+	r := w.c.NewRequest("POST", "/v2/transaction/assets/issue/prepare")
+	r.SetHeaders(header)
+	r.SetBody(body)
+
+	// Do http request
+	_, resp, err := restapi.RequireOK(w.c.DoRequest(r))
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	// Parse http response
+	var respBody rtstructs.Response
+	if err = restapi.DecodeBody(resp, &respBody); err != nil {
+		return nil, err
+	}
+
+	if respBody.ErrCode != errors.SuccCode {
+		err = rest.CodedError(respBody.ErrCode, respBody.ErrMessage)
+		return nil, err
+	}
+
+	respPayload, ok := respBody.Payload.(string)
+	if !ok {
+		err = fmt.Errorf("response payload type invalid: %v", reflect.TypeOf(respBody.Payload))
+		return nil, err
+	}
+	err = json.Unmarshal([]byte(respPayload), &result)
+	if err != nil {
+		return nil, err
+	}
+	return result, err
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////
+// Transfer Colored Token
 
 // TransferCToken is used to transfer colored tokens from one user to another.
 //
@@ -225,13 +265,13 @@ func (w *WalletClient) TransferCToken(header http.Header, body *wallet.TransferC
 	}
 
 	// 1 send transfer proposal to get wallet.Tx
-	txs, err := w.SendTransferCTokenProposal(header, body, signParams)
+	txs, err := w.SendTransferCTokenProposal(header, body)
 	if err != nil {
 		return nil, err
 	}
 
 	// 2 sign public key as signature
-	err = w.signTxs(body.From, txs, signParams)
+	err = w.SignTxs(txs, signParams)
 	if err != nil {
 		err = fmt.Errorf("sign Txs error: %v", err)
 		return nil, err
@@ -240,6 +280,62 @@ func (w *WalletClient) TransferCToken(header http.Header, body *wallet.TransferC
 	// 3 call ProcessTx to transfer formally
 	return w.ProcessTx(header, txs)
 }
+
+// SendTransferCTokenProposal is used to send transfer colored tokens proposal to get wallet.Tx to be signed.
+//
+// The default invoking mode is asynchronous, it will return
+// without waiting for blockchain transaction confirmation.
+//
+// If you want to switch to synchronous invoking mode, set
+// 'BC-Invoke-Mode' header to 'sync' value. In synchronous mode,
+// it will not return until the blockchain transaction is confirmed.
+//
+// The default key pair trust mode does not trust, it will required key pair.
+// If you had trust the key pair, it will required security code.
+//
+func (w *WalletClient) SendTransferCTokenProposal(header http.Header, body *wallet.TransferCTokenBody) (result []*pw.TX, err error) {
+	if body == nil {
+		err = fmt.Errorf("request payload invalid")
+		return nil, err
+	}
+
+	// Build http request
+	r := w.c.NewRequest("POST", "/v2/transaction/tokens/transfer/prepare")
+	r.SetHeaders(header)
+	r.SetBody(body)
+
+	// Do http request
+	_, resp, err := restapi.RequireOK(w.c.DoRequest(r))
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	// Parse http response
+	var respBody rtstructs.Response
+	if err = restapi.DecodeBody(resp, &respBody); err != nil {
+		return nil, err
+	}
+
+	if respBody.ErrCode != errors.SuccCode {
+		err = rest.CodedError(respBody.ErrCode, respBody.ErrMessage)
+		return nil, err
+	}
+
+	respPayload, ok := respBody.Payload.(string)
+	if !ok {
+		err = fmt.Errorf("response payload type invalid: %v", reflect.TypeOf(respBody.Payload))
+		return nil, err
+	}
+	err = json.Unmarshal([]byte(respPayload), &result)
+	if err != nil {
+		return nil, err
+	}
+	return result, err
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////
+// Transfer Asset
 
 // TransferAsset is used to transfer assets from one user to another.
 //
@@ -267,13 +363,13 @@ func (w *WalletClient) TransferAsset(header http.Header, body *wallet.TransferAs
 	}
 
 	// 1 send transfer proposal to get wallet.Tx
-	txs, err := w.SendTransferAssetProposal(header, body, signParams)
+	txs, err := w.SendTransferAssetProposal(header, body)
 	if err != nil {
 		return nil, err
 	}
 
 	// 2 sign public key as signature
-	err = w.signTxs(body.From, txs, signParams)
+	err = w.SignTxs(txs, signParams)
 	if err != nil {
 		err = fmt.Errorf("sign Txs error: %v", err)
 		return nil, err
@@ -281,158 +377,6 @@ func (w *WalletClient) TransferAsset(header http.Header, body *wallet.TransferAs
 
 	// 3 call ProcessTx to transfer formally
 	return w.ProcessTx(header, txs)
-}
-
-// SendIssueAssetProposal is used to send issue asset proposal to get wallet.Tx to be signed.
-//
-// The default invoking mode is asynchronous, it will return
-// without waiting for blockchain transaction confirmation.
-//
-// If you want to switch to synchronous invoking mode, set
-// 'BC-Invoke-Mode' header to 'sync' value. In synchronous mode,
-// it will not return until the blockchain transaction is confirmed.
-//
-// The default key pair trust mode does not trust, it will required key pair.
-// If you had trust the key pair, it will required security code.
-//
-func (w *WalletClient) SendIssueAssetProposal(header http.Header, body *wallet.IssueAssetBody, signParams *pki.SignatureParam) (result []*pw.TX, err error) {
-	if body == nil {
-		err = fmt.Errorf("request payload invalid")
-		return nil, err
-	}
-
-	if w.s != nil {
-		signParams, err = w.queryPrivateKey(header, signParams)
-		if err != nil {
-			return
-		}
-	}
-
-	// Build http request
-	r := w.c.NewRequest("POST", "/v1/transaction/assets/issue/prepare")
-	r.SetHeaders(header)
-
-	// Build request payload
-	reqPayload, err := json.Marshal(body)
-	if err != nil {
-		return nil, err
-	}
-	sign, err := buildSignatureBody(signParams, reqPayload)
-	if err != nil {
-		return nil, err
-	}
-
-	// Build request body
-	reqBody := &wallet.WalletRequest{
-		Payload:   string(reqPayload),
-		Signature: sign,
-	}
-	r.SetBody(reqBody)
-
-	// Do http request
-	_, resp, err := restapi.RequireOK(w.c.DoRequest(r))
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	// Parse http response
-	var respBody rtstructs.Response
-	if err = restapi.DecodeBody(resp, &respBody); err != nil {
-		return nil, err
-	}
-
-	if respBody.ErrCode != errors.SuccCode {
-		err = rest.CodedError(respBody.ErrCode, respBody.ErrMessage)
-		return nil, err
-	}
-
-	respPayload, ok := respBody.Payload.(string)
-	if !ok {
-		err = fmt.Errorf("response payload type invalid: %v", reflect.TypeOf(respBody.Payload))
-		return nil, err
-	}
-	err = json.Unmarshal([]byte(respPayload), &result)
-	if err != nil {
-		return nil, err
-	}
-	return result, err
-}
-
-// SendTransferCTokenProposal is used to send transfer colored tokens proposal to get wallet.Tx to be signed.
-//
-// The default invoking mode is asynchronous, it will return
-// without waiting for blockchain transaction confirmation.
-//
-// If you want to switch to synchronous invoking mode, set
-// 'BC-Invoke-Mode' header to 'sync' value. In synchronous mode,
-// it will not return until the blockchain transaction is confirmed.
-//
-// The default key pair trust mode does not trust, it will required key pair.
-// If you had trust the key pair, it will required security code.
-//
-func (w *WalletClient) SendTransferCTokenProposal(header http.Header, body *wallet.TransferCTokenBody, signParams *pki.SignatureParam) (result []*pw.TX, err error) {
-	if body == nil {
-		err = fmt.Errorf("request payload invalid")
-		return nil, err
-	}
-
-	if w.s != nil {
-		signParams, err = w.queryPrivateKey(header, signParams)
-		if err != nil {
-			return
-		}
-	}
-
-	// Build http request
-	r := w.c.NewRequest("POST", "/v1/transaction/tokens/transfer/prepare")
-	r.SetHeaders(header)
-
-	// Build request payload
-	reqPayload, err := json.Marshal(body)
-	if err != nil {
-		return nil, err
-	}
-	sign, err := buildSignatureBody(signParams, reqPayload)
-	if err != nil {
-		return nil, err
-	}
-
-	// Build request body
-	reqBody := &wallet.WalletRequest{
-		Payload:   string(reqPayload),
-		Signature: sign,
-	}
-	r.SetBody(reqBody)
-
-	// Do http request
-	_, resp, err := restapi.RequireOK(w.c.DoRequest(r))
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	// Parse http response
-	var respBody rtstructs.Response
-	if err = restapi.DecodeBody(resp, &respBody); err != nil {
-		return nil, err
-	}
-
-	if respBody.ErrCode != errors.SuccCode {
-		err = rest.CodedError(respBody.ErrCode, respBody.ErrMessage)
-		return nil, err
-	}
-
-	respPayload, ok := respBody.Payload.(string)
-	if !ok {
-		err = fmt.Errorf("response payload type invalid: %v", reflect.TypeOf(respBody.Payload))
-		return nil, err
-	}
-	err = json.Unmarshal([]byte(respPayload), &result)
-	if err != nil {
-		return nil, err
-	}
-	return result, err
 }
 
 // SendTransferAssetProposal is used to send transfer asset proposal to get wallet.Tx to be signed.
@@ -447,39 +391,16 @@ func (w *WalletClient) SendTransferCTokenProposal(header http.Header, body *wall
 // The default key pair trust mode does not trust, it will required key pair.
 // If you had trust the key pair, it will required security code.
 //
-func (w *WalletClient) SendTransferAssetProposal(header http.Header, body *wallet.TransferAssetBody, signParams *pki.SignatureParam) (result []*pw.TX, err error) {
+func (w *WalletClient) SendTransferAssetProposal(header http.Header, body *wallet.TransferAssetBody) (result []*pw.TX, err error) {
 	if body == nil {
 		err = fmt.Errorf("request payload invalid")
 		return nil, err
 	}
 
-	if w.s != nil {
-		signParams, err = w.queryPrivateKey(header, signParams)
-		if err != nil {
-			return
-		}
-	}
-
 	// Build http request
-	r := w.c.NewRequest("POST", "/v1/transaction/assets/transfer/prepare")
+	r := w.c.NewRequest("POST", "/v2/transaction/assets/transfer/prepare")
 	r.SetHeaders(header)
-
-	// Build request payload
-	reqPayload, err := json.Marshal(body)
-	if err != nil {
-		return nil, err
-	}
-	sign, err := buildSignatureBody(signParams, reqPayload)
-	if err != nil {
-		return nil, err
-	}
-
-	// Build request body
-	reqBody := &wallet.WalletRequest{
-		Payload:   string(reqPayload),
-		Signature: sign,
-	}
-	r.SetBody(reqBody)
+	r.SetBody(body)
 
 	// Do http request
 	_, resp, err := restapi.RequireOK(w.c.DoRequest(r))
@@ -511,24 +432,29 @@ func (w *WalletClient) SendTransferAssetProposal(header http.Header, body *walle
 	return result, err
 }
 
-func (w *WalletClient) signTxs(founder string, txs []*pw.TX, signParams *pki.SignatureParam) (err error) {
+// SignTxs is used to sign multiple UTXOs
+//
+func (w *WalletClient) SignTxs(txs []*pw.TX, signParams *pki.SignatureParam) (err error) {
+	signCreator := string(signParams.Creator)
 	for _, tx := range txs {
-		if tx.Founder != founder {
+		if tx.Founder != signCreator {
 			// sign fee by platform private key
 			platformSignParams, err := w.c.GetEnterpriseSignParam()
 			if err != nil {
 				return err
 			}
 
-			w.signTx(tx, platformSignParams)
+			w.SignTx(tx, platformSignParams)
 		} else {
-			w.signTx(tx, signParams)
+			w.SignTx(tx, signParams)
 		}
 	}
 	return nil
 }
 
-func (w *WalletClient) signTx(tx *pw.TX, signParams *pki.SignatureParam) (err error) {
+// SignTx is used to sign single UTXO
+//
+func (w *WalletClient) SignTx(tx *pw.TX, signParams *pki.SignatureParam) (err error) {
 	for _, txout := range tx.Txout {
 		if txout.Script == nil {
 			err = fmt.Errorf("script is nil, no need to sign")
@@ -569,7 +495,7 @@ func (w *WalletClient) ProcessTx(header http.Header, txs []*pw.TX) (result *wall
 	}
 
 	// Build http request
-	r := w.c.NewRequest("POST", "/v1/transaction/process")
+	r := w.c.NewRequest("POST", "/v2/transaction/process")
 	r.SetHeaders(header)
 
 	// Build request payload
@@ -632,7 +558,7 @@ func (w *WalletClient) QueryTransactionLogs(header http.Header, id did.Identifie
 	numStr := strconv.Itoa(int(num))
 	pageStr := strconv.Itoa(int(page))
 	// Build http request
-	r := w.c.NewRequest("GET", "/v1/transaction/logs")
+	r := w.c.NewRequest("GET", "/v2/transaction/logs")
 	r.SetHeaders(header)
 	r.SetParam("id", string(id))
 	r.SetParam("type", txType)
@@ -687,7 +613,7 @@ func (w *WalletClient) QueryTransactionUTXO(header http.Header, id did.Identifie
 	numStr := strconv.Itoa(int(num))
 	pageStr := strconv.Itoa(int(page))
 	// Build http request
-	r := w.c.NewRequest("GET", "/v1/transaction/utxo")
+	r := w.c.NewRequest("GET", "/v2/transaction/utxo")
 	r.SetHeaders(header)
 	r.SetParam("id", string(id))
 	r.SetParam("num", numStr)
@@ -741,7 +667,7 @@ func (w *WalletClient) QueryTransactionSTXO(header http.Header, id did.Identifie
 	numStr := strconv.Itoa(int(num))
 	pageStr := strconv.Itoa(int(page))
 	// Build http request
-	r := w.c.NewRequest("GET", "/v1/transaction/stxo")
+	r := w.c.NewRequest("GET", "/v2/transaction/stxo")
 	r.SetHeaders(header)
 	r.SetParam("id", string(id))
 	r.SetParam("num", numStr)

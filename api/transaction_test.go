@@ -43,18 +43,18 @@ func TestIssueCTokenSucc(t *testing.T) {
 	)
 
 	//request body & response body
-	reqBody := &structs.IssueBody{
+	reqBody := &sw.IssueBody{
 		Issuer:  "did:axn:001",
 		Owner:   "did:axn:002",
 		AssetId: "asset-id-001",
 		Amount:  1000,
 	}
-	signParam := &structs.SignatureParam{
+	signParam := &pki.SignatureParam{
 		Creator:    "did:axn:arxan-provider",
 		Nonce:      "helloalice",
 		PrivateKey: "WBZNmTTf34Kg+pQOTSIRL+JeQYDfj7InWc0A/9kvNvQSI8Ue8iRD8gn9CNmGO2EjJILF/3RELmEcbuS5G0d+Mg==",
 	}
-	payload := &structs.WalletResponse{
+	payload := &sw.WalletResponse{
 		TokenId:        ctokenID,
 		TransactionIds: []string{transID},
 	}
@@ -69,7 +69,12 @@ func TestIssueCTokenSucc(t *testing.T) {
 
 	//mock http request
 	gock.New("http://127.0.0.1:8006").
-		Post("/v1/transaction/tokens/issue/prepare").
+		Post("/v2/transaction/tokens/issue/prepare").
+		MatchHeader("X-Auth-Token", token).
+		Reply(200).
+		JSON(respBody)
+	gock.New("http://127.0.0.1:8006").
+		Post("/v2/transaction/process").
 		MatchHeader("X-Auth-Token", token).
 		Reply(200).
 		JSON(respBody)
@@ -109,13 +114,13 @@ func TestIssueCTokenFail(t *testing.T) {
 	)
 
 	//request body & response body
-	reqBody := &structs.IssueBody{
+	reqBody := &sw.IssueBody{
 		Issuer:  "did:axn:001",
 		Owner:   "did:axn:002",
 		AssetId: "asset-id-001",
 		Amount:  1000,
 	}
-	signParam := &structs.SignatureParam{
+	signParam := &pki.SignatureParam{
 		Creator:    "did:axn:arxan-provider",
 		Nonce:      "helloalice",
 		PrivateKey: "WBZNmTTf34Kg+pQOTSIRL+JeQYDfj7InWc0A/9kvNvQSI8Ue8iRD8gn9CNmGO2EjJILF/3RELmEcbuS5G0d+Mg==",
@@ -127,7 +132,7 @@ func TestIssueCTokenFail(t *testing.T) {
 
 	//mock http request
 	gock.New("http://127.0.0.1:8006").
-		Post("/v1/transaction/tokens/issue").
+		Post("/v2/transaction/tokens/issue").
 		MatchHeader("X-Auth-Token", token).
 		Reply(errCode).
 		JSON(respBody)
@@ -161,13 +166,13 @@ func TestIssueCTokenFailErrCode(t *testing.T) {
 	)
 
 	//request body & response body
-	reqBody := &structs.IssueBody{
+	reqBody := &sw.IssueBody{
 		Issuer:  "did:axn:001",
 		Owner:   "did:axn:002",
 		AssetId: "asset-id-001",
 		Amount:  1000,
 	}
-	signParam := &structs.SignatureParam{
+	signParam := &pki.SignatureParam{
 		Creator:    "did:axn:arxan-provider",
 		Nonce:      "helloalice",
 		PrivateKey: "WBZNmTTf34Kg+pQOTSIRL+JeQYDfj7InWc0A/9kvNvQSI8Ue8iRD8gn9CNmGO2EjJILF/3RELmEcbuS5G0d+Mg==",
@@ -179,7 +184,7 @@ func TestIssueCTokenFailErrCode(t *testing.T) {
 
 	//mock http request
 	gock.New("http://127.0.0.1:8006").
-		Post("/v1/transaction/tokens/issue").
+		Post("/v2/transaction/tokens/issue").
 		MatchHeader("X-Auth-Token", token).
 		Reply(200).
 		JSON(respBody)
@@ -221,17 +226,17 @@ func TestIssueAssetSucc(t *testing.T) {
 	)
 
 	//request body & response body
-	reqBody := &structs.IssueAssetBody{
+	reqBody := &sw.IssueAssetBody{
 		Issuer:  "did:axn:001",
 		Owner:   "did:axn:002",
 		AssetId: "asset-id-001",
 	}
-	sign := &structs.SignatureParam{
+	sign := &pki.SignatureParam{
 		Creator:    "did:axn:arxan-provider",
 		Nonce:      "helloalice",
 		PrivateKey: "WBZNmTTf34Kg+pQOTSIRL+JeQYDfj7InWc0A/9kvNvQSI8Ue8iRD8gn9CNmGO2EjJILF/3RELmEcbuS5G0d+Mg==",
 	}
-	payload := &structs.WalletResponse{
+	payload := &sw.WalletResponse{
 		TokenId:        ctokenID,
 		TransactionIds: []string{transID},
 	}
@@ -246,7 +251,7 @@ func TestIssueAssetSucc(t *testing.T) {
 
 	//mock http request
 	gock.New("http://127.0.0.1:8006").
-		Post("/v1/transaction/assets/issue").
+		Post("/v2/transaction/assets/issue").
 		MatchHeader("X-Auth-Token", token).
 		Reply(200).
 		JSON(respBody)
@@ -286,12 +291,12 @@ func TestIssueAssetFail(t *testing.T) {
 	)
 
 	//request body & response body
-	reqBody := &structs.IssueAssetBody{
+	reqBody := &sw.IssueAssetBody{
 		Issuer:  "did:axn:001",
 		Owner:   "did:axn:002",
 		AssetId: "asset-id-001",
 	}
-	sign := &structs.SignatureParam{
+	sign := &pki.SignatureParam{
 		Creator:    "did:axn:arxan-provider",
 		Nonce:      "helloalice",
 		PrivateKey: "WBZNmTTf34Kg+pQOTSIRL+JeQYDfj7InWc0A/9kvNvQSI8Ue8iRD8gn9CNmGO2EjJILF/3RELmEcbuS5G0d+Mg==",
@@ -303,7 +308,7 @@ func TestIssueAssetFail(t *testing.T) {
 
 	//mock http request
 	gock.New("http://127.0.0.1:8006").
-		Post("/v1/transaction/assets/issue").
+		Post("/v2/transaction/assets/issue").
 		MatchHeader("X-Auth-Token", token).
 		Reply(errCode).
 		JSON(respBody)
@@ -337,12 +342,12 @@ func TestIssueAssetFailErrCode(t *testing.T) {
 	)
 
 	//request body & response body
-	reqBody := &structs.IssueAssetBody{
+	reqBody := &sw.IssueAssetBody{
 		Issuer:  "did:axn:001",
 		Owner:   "did:axn:002",
 		AssetId: "asset-id-001",
 	}
-	sign := &structs.SignatureParam{
+	sign := &pki.SignatureParam{
 		Creator:    "did:axn:arxan-provider",
 		Nonce:      "helloalice",
 		PrivateKey: "WBZNmTTf34Kg+pQOTSIRL+JeQYDfj7InWc0A/9kvNvQSI8Ue8iRD8gn9CNmGO2EjJILF/3RELmEcbuS5G0d+Mg==",
@@ -354,7 +359,7 @@ func TestIssueAssetFailErrCode(t *testing.T) {
 
 	//mock http request
 	gock.New("http://127.0.0.1:8006").
-		Post("/v1/transaction/assets/issue").
+		Post("/v2/transaction/assets/issue").
 		MatchHeader("X-Auth-Token", token).
 		Reply(200).
 		JSON(respBody)
@@ -395,23 +400,23 @@ func TestTransferCTokenSucc(t *testing.T) {
 	)
 
 	//request body & response body
-	reqBody := &structs.TransferCTokenBody{
+	reqBody := &sw.TransferCTokenBody{
 		From:    "did:axn:001",
 		To:      "did:axn:002",
 		AssetId: "asset-id-001",
-		Tokens: []*structs.TokenAmount{
+		Tokens: []*sw.TokenAmount{
 			{
 				TokenId: "colored-token-id-001",
 				Amount:  500,
 			},
 		},
 	}
-	sign := &structs.SignatureParam{
+	sign := &pki.SignatureParam{
 		Creator:    "did:axn:arxan-provider",
 		Nonce:      "helloalice",
 		PrivateKey: "WBZNmTTf34Kg+pQOTSIRL+JeQYDfj7InWc0A/9kvNvQSI8Ue8iRD8gn9CNmGO2EjJILF/3RELmEcbuS5G0d+Mg==",
 	}
-	payload := &structs.WalletResponse{
+	payload := &sw.WalletResponse{
 		TransactionIds: []string{transID},
 	}
 	byPayload, err := json.Marshal(payload)
@@ -425,7 +430,7 @@ func TestTransferCTokenSucc(t *testing.T) {
 
 	//mock http request
 	gock.New("http://127.0.0.1:8006").
-		Post("/v1/transaction/tokens/transfer").
+		Post("/v2/transaction/tokens/transfer").
 		MatchHeader("X-Auth-Token", token).
 		Reply(200).
 		JSON(respBody)
@@ -462,18 +467,18 @@ func TestTransferCTokenFail(t *testing.T) {
 	)
 
 	//request body & response body
-	reqBody := &structs.TransferCTokenBody{
+	reqBody := &sw.TransferCTokenBody{
 		From:    "did:axn:001",
 		To:      "did:axn:002",
 		AssetId: "asset-id-001",
-		Tokens: []*structs.TokenAmount{
+		Tokens: []*sw.TokenAmount{
 			{
 				TokenId: "colored-token-id-001",
 				Amount:  500,
 			},
 		},
 	}
-	sign := &structs.SignatureParam{
+	sign := &pki.SignatureParam{
 		Creator:    "did:axn:arxan-provider",
 		Nonce:      "helloalice",
 		PrivateKey: "WBZNmTTf34Kg+pQOTSIRL+JeQYDfj7InWc0A/9kvNvQSI8Ue8iRD8gn9CNmGO2EjJILF/3RELmEcbuS5G0d+Mg==",
@@ -485,7 +490,7 @@ func TestTransferCTokenFail(t *testing.T) {
 
 	//mock http request
 	gock.New("http://127.0.0.1:8006").
-		Post("/v1/transaction/tokens/transfer").
+		Post("/v2/transaction/tokens/transfer").
 		MatchHeader("X-Auth-Token", token).
 		Reply(errCode).
 		JSON(respBody)
@@ -519,18 +524,18 @@ func TestTransferCTokenFailErrCode(t *testing.T) {
 	)
 
 	//request body & response body
-	reqBody := &structs.TransferCTokenBody{
+	reqBody := &sw.TransferCTokenBody{
 		From:    "did:axn:001",
 		To:      "did:axn:002",
 		AssetId: "asset-id-001",
-		Tokens: []*structs.TokenAmount{
+		Tokens: []*sw.TokenAmount{
 			{
 				TokenId: "colored-token-id-001",
 				Amount:  500,
 			},
 		},
 	}
-	sign := &structs.SignatureParam{
+	sign := &pki.SignatureParam{
 		Creator:    "did:axn:arxan-provider",
 		Nonce:      "helloalice",
 		PrivateKey: "WBZNmTTf34Kg+pQOTSIRL+JeQYDfj7InWc0A/9kvNvQSI8Ue8iRD8gn9CNmGO2EjJILF/3RELmEcbuS5G0d+Mg==",
@@ -542,7 +547,7 @@ func TestTransferCTokenFailErrCode(t *testing.T) {
 
 	//mock http request
 	gock.New("http://127.0.0.1:8006").
-		Post("/v1/transaction/tokens/transfer").
+		Post("/v2/transaction/tokens/transfer").
 		MatchHeader("X-Auth-Token", token).
 		Reply(200).
 		JSON(respBody)
@@ -583,17 +588,17 @@ func TestTransferAssetSucc(t *testing.T) {
 	)
 
 	//request body & response body
-	reqBody := &structs.TransferAssetBody{
+	reqBody := &sw.TransferAssetBody{
 		From:   "did:axn:001",
 		To:     "did:axn:002",
 		Assets: []string{"asset-id-001"},
 	}
-	sign := &structs.SignatureParam{
+	sign := &pki.SignatureParam{
 		Creator:    "did:axn:arxan-provider",
 		Nonce:      "helloalice",
 		PrivateKey: "WBZNmTTf34Kg+pQOTSIRL+JeQYDfj7InWc0A/9kvNvQSI8Ue8iRD8gn9CNmGO2EjJILF/3RELmEcbuS5G0d+Mg==",
 	}
-	payload := &structs.WalletResponse{
+	payload := &sw.WalletResponse{
 		TransactionIds: []string{transID},
 	}
 	byPayload, err := json.Marshal(payload)
@@ -607,7 +612,7 @@ func TestTransferAssetSucc(t *testing.T) {
 
 	//mock http request
 	gock.New("http://127.0.0.1:8006").
-		Post("/v1/transaction/assets/transfer").
+		Post("/v2/transaction/assets/transfer").
 		MatchHeader("X-Auth-Token", token).
 		Reply(200).
 		JSON(respBody)
@@ -644,12 +649,12 @@ func TestTransferAssetFail(t *testing.T) {
 	)
 
 	//request body & response body
-	reqBody := &structs.TransferAssetBody{
+	reqBody := &sw.TransferAssetBody{
 		From:   "did:axn:001",
 		To:     "did:axn:002",
 		Assets: []string{"asset-id-001"},
 	}
-	sign := &structs.SignatureParam{
+	sign := &pki.SignatureParam{
 		Creator:    "did:axn:arxan-provider",
 		Nonce:      "helloalice",
 		PrivateKey: "WBZNmTTf34Kg+pQOTSIRL+JeQYDfj7InWc0A/9kvNvQSI8Ue8iRD8gn9CNmGO2EjJILF/3RELmEcbuS5G0d+Mg==",
@@ -661,7 +666,7 @@ func TestTransferAssetFail(t *testing.T) {
 
 	//mock http request
 	gock.New("http://127.0.0.1:8006").
-		Post("/v1/transaction/assets/transfer").
+		Post("/v2/transaction/assets/transfer").
 		MatchHeader("X-Auth-Token", token).
 		Reply(errCode).
 		JSON(respBody)
@@ -695,12 +700,12 @@ func TestTransferAssetFailErrCode(t *testing.T) {
 	)
 
 	//request body & response body
-	reqBody := &structs.TransferAssetBody{
+	reqBody := &sw.TransferAssetBody{
 		From:   "did:axn:001",
 		To:     "did:axn:002",
 		Assets: []string{"asset-id-001"},
 	}
-	sign := &structs.SignatureParam{
+	sign := &pki.SignatureParam{
 		Creator:    "did:axn:arxan-provider",
 		Nonce:      "helloalice",
 		PrivateKey: "WBZNmTTf34Kg+pQOTSIRL+JeQYDfj7InWc0A/9kvNvQSI8Ue8iRD8gn9CNmGO2EjJILF/3RELmEcbuS5G0d+Mg==",
@@ -712,7 +717,7 @@ func TestTransferAssetFailErrCode(t *testing.T) {
 
 	//mock http request
 	gock.New("http://127.0.0.1:8006").
-		Post("/v1/transaction/assets/transfer").
+		Post("/v2/transaction/assets/transfer").
 		MatchHeader("X-Auth-Token", token).
 		Reply(200).
 		JSON(respBody)
@@ -739,7 +744,8 @@ func TestTransferAssetFailErrCode(t *testing.T) {
 	if resp != nil {
 		t.Fatalf("response object should be nil when transfer asset fail")
 	}
-} */
+}
+*/
 
 func TestQueryTransactionLogsSucc(t *testing.T) {
 	//init gock & edkeyclient
@@ -782,7 +788,7 @@ func TestQueryTransactionLogsSucc(t *testing.T) {
 
 	//mock http request
 	gock.New("http://127.0.0.1:8006").
-		Get("/v1/transaction/logs").
+		Get("/v2/transaction/logs").
 		MatchParam("id", string(id)).
 		MatchParam("type", txType).
 		Reply(200).
@@ -827,7 +833,7 @@ func TestQueryTransactionLogsFail(t *testing.T) {
 
 	//mock http request
 	gock.New("http://127.0.0.1:8006").
-		Get("/v1/transaction/logs").
+		Get("/v2/transaction/logs").
 		MatchParam("id", id).
 		MatchParam("type", txType).
 		Reply(errCode).
@@ -871,7 +877,7 @@ func TestQueryTransactionLogsFailErrCode(t *testing.T) {
 
 	//mock http request
 	gock.New("http://127.0.0.1:8006").
-		Get("/v1/transaction/logs").
+		Get("/v2/transaction/logs").
 		MatchParam("id", id).
 		MatchParam("type", txType).
 		Reply(200).
@@ -943,7 +949,7 @@ func TestQueryTransactionUTXOSucc(t *testing.T) {
 
 	//mock http request
 	gock.New("http://127.0.0.1:8006").
-		Get("/v1/transaction/utxo").
+		Get("/v2/transaction/utxo").
 		MatchParam("id", string(id)).
 		MatchParam("num", "0").
 		MatchParam("page", "1").
@@ -988,7 +994,7 @@ func TestQueryTransactionUTXOFail(t *testing.T) {
 
 	//mock http request
 	gock.New("http://127.0.0.1:8006").
-		Get("/v1/transaction/utxo").
+		Get("/v2/transaction/utxo").
 		MatchParam("id", id).
 		MatchParam("num", "0").
 		MatchParam("page", "1").
@@ -1032,7 +1038,7 @@ func TestQueryTransactionUTXOFailErrCode(t *testing.T) {
 
 	//mock http request
 	gock.New("http://127.0.0.1:8006").
-		Get("/v1/transaction/utxo").
+		Get("/v2/transaction/utxo").
 		MatchParam("id", id).
 		Reply(200).
 		JSON(respBody)
@@ -1103,7 +1109,7 @@ func TestQueryTransactionSTXOSucc(t *testing.T) {
 
 	//mock http request
 	gock.New("http://127.0.0.1:8006").
-		Get("/v1/transaction/stxo").
+		Get("/v2/transaction/stxo").
 		MatchParam("id", string(id)).
 		MatchParam("num", "0").
 		MatchParam("page", "1").
@@ -1148,7 +1154,7 @@ func TestQueryTransactionSTXOFail(t *testing.T) {
 
 	//mock http request
 	gock.New("http://127.0.0.1:8006").
-		Get("/v1/transaction/stxo").
+		Get("/v2/transaction/stxo").
 		MatchParam("id", id).
 		MatchParam("num", "0").
 		MatchParam("page", "1").
@@ -1192,7 +1198,7 @@ func TestQueryTransactionSTXOFailErrCode(t *testing.T) {
 
 	//mock http request
 	gock.New("http://127.0.0.1:8006").
-		Get("/v1/transaction/stxo").
+		Get("/v2/transaction/stxo").
 		MatchParam("id", id).
 		Reply(200).
 		JSON(respBody)
