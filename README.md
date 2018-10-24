@@ -30,14 +30,24 @@ go get github.com/arxanchain/wallet-sdk-go/api
 To invoke the SDK API, you first need to create a wallet client as follows:
 
 ```code
+import (
+	pw "github.com/arxanchain/sdk-go-common/protos/wallet"
+	restapi "github.com/arxanchain/sdk-go-common/rest/api"
+	"github.com/arxanchain/sdk-go-common/structs/wallet"
+	"github.com/arxanchain/sdk-go-common/structs/pki"
+	walletapi "github.com/arxanchain/wallet-sdk-go/api"
+)
+
 // Create wallet client
 config := &restapi.Config{
-	Address:    "http://API-Gateway-IP:Port",
+	Address:    "https://API-Proxy-Gateway:Port",
 	ApiKey:     "Your-API-Access-Key",
-	CryptoCfg: &restapi.CryptoConfig{
-		Enable:         true,
-		CertsStorePath: "/path/to/client/certs",
+	TLSConfig: &restapi.TLSConfig:{
+		CAFile: "path/to/tls/ca/cert",
+		CertFile: "path/to/tls/user/cert",
+		KeyFile: "path/to/tls/user/key",
 	},
+	CallbackUrl: "http://callback-url",
 	EnterpriseSignParam: &restapi.EnterpriseSignParam{
 		Creator: "did:axn:09e2fc68-f51e-4aff-b6e4-427cce3ed1af",
 		Nonce: "nonce",
@@ -52,20 +62,14 @@ if err != nil {
 fmt.Printf("New wallet client succ\n")
 ```
 
-* When building the client configuration, the **Address** and **ApiKey** fields must
-be set. The **Address** is set to the http address of wallet-ng service, and the
-**ApiKey** is set to the API access key obtained on `ChainConsole` management page.
+* When building the client configuration, the **Address**, **ApiKey** and **TLSConfig** fields must
+be set. The **Address** is set to the address of BaaS API proxy gateway, the **ApiKey** is set to 
+the API access key obtained on `ChainConsole` management page, and the **TLSConfig** is set to the 
+real TLS config.
 
-* If you invoke the APIs via `wasabi` service, the **Address** field should
-be set to the http address of `wasabi` service, and the **CryptoCfg** field must be
-set with **CryptoCfg.Enable** being `true` and **Cryptocfg.CertsStorePath** being the
-path to client certificates (contains the platform public cert and user private key).
+* `Callback-Url` is optional. You only need to set it if you need to receive blockchain transaction events.
 
-* `wasabi` service is ArxanChain BaaS API gateway with token authentication, data
-encryption, and verifying signature.  For security requirement, enable crypto is
-recommended for production environment.
-
-* Enterprisesignparam: Enterprise signature parameter, used to sign UTXO records for AXT fee.
+* `Enterprisesignparam`: Enterprise signature parameter, used to sign UTXO records for AXT fee.
 	- Creator: Enterprise wallet did
 	- Nonce: Signature random nonce string
 	- PrivateKey: The ed25519 private key of enterprise wallet
@@ -78,19 +82,13 @@ After creating wallet client, you can use this client to register wallet account
 as follows:
 
 ```code
-import (
-	pw "github.com/arxanchain/sdk-go-common/protos/wallet"
-)
-
 // Build request header
 header := http.Header{}
 // If you use synchronous invoking mode, set following header
 header.Set("Bc-Invoke-Mode", "sync")
-// If you use asynchronous invoking mode, set following header
-// header.Set("Callback-Url", "http://callback-url")
 
 // Register wallet account
-registerBody := &structs.RegisterWalletBody{
+registerBody := &wallet.RegisterWalletBody{
 	Type:   pw.DidType_ORGANIZATION,
 	Access: "alice0001",
 	Secret: "Alice#123456",
@@ -105,25 +103,18 @@ keyPair := resp.KeyPair
 fmt.Printf("Register wallet succ.\nwallet id: %v\nED25519 public key: %v\nED25519 private key: %v", walletID, keyPair.PublicKey, keyPair.PrivateKey)
 ```
 
-* `Callback-Url` in the http header is optional. You only need to set it
-if you need to receive blockchain transaction events.
-
-* If you want to switch to synchronous invoking mode, set 'BC-Invoke-Mode'
-header to 'sync' value. In synchronous mode, it will not return until the
-blockchain transaction is confirmed.
-
 ## Create POE digital asset and upload file
 
 After creating the wallet account, you can create POE assets for this account as follows:
 
 ```code
 // Create poe asset
-poeBody := &structs.POEBody{
+poeBody := &wallet.POEBody{
 	Name:     "TestPOE",
 	Owner:    walletID,
 	Metadata: []byte("poe metadata"),
 }
-signParam := &structs.SignatureParam{
+signParam := &pki.SignatureParam{
 	Creator:    walletID,
 	Nonce:      "nonce",
 	PrivateKey: keyPair.PrivateKey,
@@ -162,23 +153,23 @@ token as follows:
 
 ```code
 // Issue colored token
-issueBody := &structs.IssueBody{
+issueBody = &wallet.IssueBody{
 	Issuer:  string(issuerID),
 	Owner:   string(walletID),
 	AssetId: string(poeID),
 	Amount:  1000,
 }
-signParam = &structs.SignatureParam{
-	Creator:    walletID,
+signParam = &pki.SignatureParam{
+	Creator:    issuerID,
 	Nonce:      "nonce",
-	PrivateKey: keyPair.PrivateKey,
+	PrivateKey: issuerKeyPair.PrivateKey,
 }
 resp, err = walletClient.IssueCToken(header, issueBody, signParam)
 if err != nil {
-	fmt.Printf("Issue colored token fail: %v\n", err)
+	log.Fatalf("Issue colored token fail: %v\n", err)
 	return
 }
-fmt.Printf("Issue colored token succ. Response: %+v\n", resp)
+log.Printf("Issue colored token succ. Response: %+v", resp)
 ```
 
 * When issuing colored token, you need to specify an issuer (one wallet account ID),
@@ -191,27 +182,27 @@ colored tokens, and can transfer some of them to other wallet accounts.
 
 ```code
 // Transfer colored token
-transferBody := &structs.TransferCTokenBody{
+transferBody = &wallet.TransferCTokenBody{
 	From: string(walletID),
 	To:   string(toID),
-	Tokens: []*structs.TokenAmount{
-		&structs.TokenAmount{
+	Tokens: []*wallet.TokenAmount{
+		&wallet.TokenAmount{
 			TokenId: tokenId,
 			Amount:  100,
 		},
 	},
 }
-signParam = &structs.SignatureParam{
+signParam = &pki.SignatureParam{
 	Creator:    walletID,
 	Nonce:      "nonce",
 	PrivateKey: keyPair.PrivateKey,
 }
 resp, err = walletClient.TransferCToken(header, transferBody, signParam)
 if err != nil {
-	fmt.Printf("Transfer colored token fail: %v\n", err)
+	log.Fatalf("Transfer colored token fail: %v\n", err)
 	return
 }
-fmt.Printf("Transfer colored token succ. Response: %+v\n", resp)
+log.Printf("Transfer colored token succ.\nResponse: %+v", resp)
 ```
 
 ## Query colored token balance
@@ -351,6 +342,10 @@ One blockchain transaction event sample as follows:
 }
 ```
 
-If you want to switch to synchronous invoking mode, set `Bc-Invoke-Mode` header
-to `sync` value. In synchronous mode, it will not return until the blockchain
+**NOTE** Please make sure that you response with http status code 200 when you have received one
+blockchain transaction event. If you don't respond, You might get the same event multiple times, 
+because the sender cannot confirm that you have received the event, so it will resend.
+
+If you don't care the blockchain transaction event, you can switch to synchronous invoking mode, 
+set `Bc-Invoke-Mode` header to `sync` value. In synchronous mode, it will not return until the blockchain
 transaction is confirmed.
