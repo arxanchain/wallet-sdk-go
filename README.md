@@ -289,6 +289,10 @@ One blockchain transaction event sample as follows:
 }
 ```
 
-If you want to switch to synchronous invoking mode, set `Bc-Invoke-Mode` header
-to `sync` value. In synchronous mode, it will not return until the blockchain
+**NOTE** Please make sure that you response with http status code 200 when you have received one
+blockchain transaction event. If you don't respond, You might get the same event multiple times, 
+because the sender cannot confirm that you have received the event, so it will resend.
+
+If you don't care the blockchain transaction event, you can switch to synchronous invoking mode, 
+set `Bc-Invoke-Mode` header to `sync` value. In synchronous mode, it will not return until the blockchain
 transaction is confirmed.
