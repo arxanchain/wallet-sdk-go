@@ -18,7 +18,7 @@ GOTOOLS_BIN = $(patsubst %,$(GOPATH)/bin/%, $(GOTOOLS))
 
 # go tool->path mapping
 go.fqp.govendor  := github.com/kardianos/govendor
-go.fqp.golint    := github.com/golang/lint/golint
+go.fqp.golint    := golang.org/x/lint/golint
 go.fqp.goimports := golang.org/x/tools/cmd/goimports
 go.fqp.misspell   := github.com/client9/misspell/cmd/misspell
 
