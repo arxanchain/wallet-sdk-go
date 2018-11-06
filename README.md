@@ -358,3 +358,35 @@ because the sender cannot confirm that you have received the event, so it will r
 If you don't care the blockchain transaction event, you can switch to synchronous invoking mode, 
 set `Bc-Invoke-Mode` header to `sync` value. In synchronous mode, it will not return until the blockchain
 transaction is confirmed.
+
+## Organize your client certificates
+
+To communicate with the server, you need to register API-Key and download the corresponding client certificates 
+(contains the platform public certificate and user private key) from the ArxanChain BaaS Chainconsole. 
+Refer to [API cert management](http://chain.arxanfintech.com/infocenter/html/chainconsole/manual.html#api) for more details.
+
+After downloading the two files, use the following command to convert your user private key file into PEM format.
+
+```sh
+openssl ec -in pWEzB4yMM1518346407.key -outform PEM -out pWEzB4yMM1518346407.key
+```
+
+use the following command to rename the platform public certificate.
+
+```sh
+mv server.crt tls.cert
+```
+
+Then organize the two files in the following directory structure.
+
+```
+.
+└── certs
+    ├── tls
+    |   └── tls.cert
+    └── users
+        └── pWEzB4yMM1518346407
+            └── pWEzB4yMM1518346407.key
+```
+
+This directory is the path set to the `CertsStorePath` parameter.
