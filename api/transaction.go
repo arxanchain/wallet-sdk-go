@@ -433,7 +433,10 @@ func (w *WalletClient) SendTransferAssetProposal(header http.Header, body *walle
 }
 
 // SignTxs is used to sign multiple UTXOs
-//
+// using the given private key in signParams
+// param txs: transactions to be signed
+// param signParams: private key userd for signature
+// return: err not nil if failed
 func (w *WalletClient) SignTxs(txs []*pw.TX, signParams *pki.SignatureParam) (err error) {
 	signCreator := string(signParams.Creator)
 	for _, tx := range txs {
